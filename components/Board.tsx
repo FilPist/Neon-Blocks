@@ -1,0 +1,156 @@
+
+import React, { useMemo } from 'react';
+import { BoardGrid, TetrominoType, Popup } from '../types';
+
+interface BoardProps {
+  grid: BoardGrid;
+  piece: {
+    type: TetrominoType;
+    shape: number[][];
+    x: number;
+    y: number;
+    color: string;
+  } | null;
+  isShaking: boolean;
+  popups: Popup[];
+}
+
+const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups }) => {
+  
+  const { displayGrid } = useMemo(() => {
+    const displayGrid = grid.map(row => row.map(cell => ({ ...cell, isGhost: false })));
+    let ghostY = -1;
+
+    if (piece) {
+        const shape = piece.shape;
+        let tempY = piece.y;
+        
+        const check = (offY: number) => {
+             for(let r=0; r<shape.length; r++) {
+                 for(let c=0; c<shape[r].length; c++) {
+                     if(shape[r][c]) {
+                         const ny = tempY + offY + r;
+                         const nx = piece.x + c;
+                         if (ny >= 20 || (ny >= 0 && grid[ny][nx].locked)) return true;
+                     }
+                 }
+             }
+             return false;
+        }
+
+        while(!check(1)) {
+            tempY++;
+        }
+        ghostY = tempY;
+
+        if (ghostY > piece.y) {
+            shape.forEach((row, r) => {
+                row.forEach((value, c) => {
+                    if (value) {
+                        const gy = ghostY + r;
+                        const gx = piece.x + c;
+                        if (gy >= 0 && gy < 20 && !displayGrid[gy][gx].value) {
+                            displayGrid[gy][gx] = { 
+                                value: piece.type, 
+                                locked: false, 
+                                color: piece.color,
+                                isGhost: true
+                            };
+                        }
+                    }
+                });
+            });
+        }
+
+        piece.shape.forEach((row, r) => {
+            row.forEach((value, c) => {
+                if (value !== 0) {
+                    const y = piece.y + r;
+                    const x = piece.x + c;
+                    if (y >= 0 && y < displayGrid.length && x >= 0 && x < displayGrid[0].length) {
+                        displayGrid[y][x] = { 
+                            value: piece.type, 
+                            locked: false, 
+                            color: piece.color,
+                            isGhost: false
+                        };
+                    }
+                }
+            });
+        });
+    }
+    return { displayGrid };
+  }, [grid, piece]);
+
+  return (
+    <div className={`relative mx-auto transition-transform ${isShaking ? 'animate-shake' : ''}`}>
+        <div className="absolute -inset-6 bg-gradient-to-tr from-p5-purple to-p5-blue transform rotate-1 skew-x-2 opacity-50 z-0 blur-2xl transition-opacity duration-300" style={{ opacity: isShaking ? 0.9 : 0.4 }} />
+        <div className="absolute -inset-3 bg-black transform -rotate-1 z-0 border-4 border-p5-blue shadow-hard-black" />
+        
+        <div className="relative z-10 bg-[#0a0a1f] w-[85vw] max-w-[450px] aspect-[10/20] h-[80vh] sm:h-[85vh] overflow-hidden shadow-hard-black border-2 border-white/20">
+            
+            <div className="absolute inset-0 z-20 pointer-events-none scanlines opacity-30" />
+
+            <div className="grid grid-rows-[repeat(20,minmax(0,1fr))] h-full w-full relative z-10 p-1 gap-[1px] bg-black/40">
+                {displayGrid.map((row, y) => 
+                    <div key={y} className="grid grid-cols-[repeat(10,minmax(0,1fr))] gap-[1px]">
+                        {row.map((cell, x) => (
+                            <div 
+                                key={`${x}-${y}`} 
+                                className={`relative w-full h-full transition-all duration-75 overflow-hidden`}
+                            >
+                                {cell.value && !cell.isGhost && (
+                                    <div 
+                                        className={`w-full h-full animate-zoom-in duration-100 relative ${isShaking ? 'animate-flash-row' : ''}`}
+                                        style={{ 
+                                            backgroundColor: cell.color,
+                                            border: '2px solid rgba(255,255,255,0.8)',
+                                            boxShadow: `0 0 15px ${cell.color}`
+                                        }}
+                                    >
+                                        <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent" />
+                                    </div>
+                                )}
+
+                                {cell.isGhost && (
+                                    <div 
+                                        className="w-full h-full border-2 opacity-30 flex items-center justify-center bg-transparent"
+                                        style={{ 
+                                            borderColor: cell.color,
+                                            boxShadow: `inset 0 0 5px ${cell.color}`
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {popups.map(popup => (
+                <div 
+                    key={popup.id}
+                    className="absolute z-50 pointer-events-none animate-popup whitespace-nowrap"
+                    style={{
+                        left: `${Math.min(Math.max(popup.x * 10, 10), 80)}%`,
+                        top: `${popup.y * 5}%`,
+                    }}
+                >
+                    <span 
+                        className="font-p5-display text-6xl text-white italic tracking-tighter drop-shadow-[4px_4px_0_rgba(0,0,0,1)] text-outline"
+                        style={{ color: popup.color, textShadow: `3px 3px 0px #000, 0 0 20px ${popup.color}` }}
+                    >
+                        {popup.text}
+                    </span>
+                </div>
+            ))}
+        </div>
+        
+        <div className="absolute -bottom-8 -left-8 bg-black text-white font-p5-display text-4xl px-6 py-2 transform rotate-3 border-2 border-p5-cyan z-20 shadow-neon-cyan">
+            <span className="text-glitch tracking-widest text-p5-cyan" data-text="ACTIVE">ACTIVE</span>
+        </div>
+    </div>
+  );
+};
+
+export default Board;

@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neon Tetris</title>
+    <script type="importmap">
+    {
+      "imports": {
+        "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+      }
+    }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@600;700;900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              p5: {
+                red: '#ff2a6d',     
+                dark: '#050510',    
+                gray: '#1a1a2e',    
+                white: '#e0e0e0',   
+                yellow: '#fcee0a', 
+                cyan: '#05d9e8',    
+                purple: '#d300c5',  
+                blue: '#304ffe'     
+              }
+            },
+            fontFamily: {
+              'p5-display': ['"Anton"', 'sans-serif'], 
+              'p5-ui': ['"Rajdhani"', 'sans-serif'],   
+            },
+            boxShadow: {
+              'hard-black': '8px 8px 0px 0px rgba(5, 5, 16, 1)',
+              'hard-white': '6px 6px 0px 0px rgba(224, 224, 224, 1)',
+              'neon-pink': '0 0 10px rgba(255, 42, 109, 0.6), 0 0 20px rgba(255, 42, 109, 0.4)',
+              'neon-cyan': '0 0 10px rgba(5, 217, 232, 0.6), 0 0 20px rgba(5, 217, 232, 0.4)',
+              'neon-purple': '0 0 10px rgba(211, 0, 197, 0.6), 0 0 20px rgba(211, 0, 197, 0.4)',
+              'neon-blue': '0 0 10px rgba(48, 79, 254, 0.6), 0 0 20px rgba(48, 79, 254, 0.4)',
+            },
+            transitionTimingFunction: {
+                'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+            },
+            animation: {
+              'shake': 'shake 0.3s cubic-bezier(.36,.07,.19,.97) both',
+              'slam-in': 'slamIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              'glitch': 'glitch 1s linear infinite',
+              'wipe-in': 'wipeIn 0.6s cubic-bezier(0.7, 0, 0.3, 1) both',
+              'wipe-out': 'wipeOut 0.6s cubic-bezier(0.7, 0, 0.3, 1) both',
+              'letter-reveal': 'letterReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+              'slash-expand': 'slashExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slash-collapse': 'slashCollapse 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'popup': 'popup 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'flash-row': 'flashRow 0.3s ease-out forwards',
+              'float-glitch': 'floatGlitch 4s ease-in-out infinite',
+              'ticker': 'ticker 30s linear infinite',
+              'card-float': 'cardFloat 6s ease-in-out infinite',
+              'fade-in': 'fadeIn 0.3s ease-out forwards',
+              'slide-in-right': 'slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'zoom-in': 'zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            },
+            keyframes: {
+              shake: {
+                '10%, 90%': { transform: 'translate3d(-2px, 0, 0)' },
+                '20%, 80%': { transform: 'translate3d(4px, 0, 0)' },
+                '30%, 50%, 70%': { transform: 'translate3d(-6px, 0, 0)' },
+                '40%, 60%': { transform: 'translate3d(6px, 0, 0)' }
+              },
+              slamIn: {
+                '0%': { transform: 'scale(1.5)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              glitch: {
+                '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                '62%': { transform: 'translate(0,0) skew(5deg)' },
+              },
+              letterReveal: {
+                '0%': { transform: 'translateY(100%) scale(0.5)', opacity: '0' },
+                '100%': { transform: 'translateY(0) scale(1)', opacity: '1' }
+              },
+              slashExpand: {
+                '0%': { transform: 'skewX(-20deg) scaleY(0)' },
+                '100%': { transform: 'skewX(-20deg) scaleY(1)' }
+              },
+              slashCollapse: {
+                '0%': { transform: 'skewX(-20deg) scaleY(1)' },
+                '100%': { transform: 'skewX(-20deg) scaleY(0)' }
+              },
+              popup: {
+                '0%': { transform: 'translate(-50%, -50%) scale(0.2) rotate(-15deg)', opacity: '0' },
+                '20%': { transform: 'translate(-50%, -100%) scale(1.5) rotate(5deg)', opacity: '1' },
+                '40%': { transform: 'translate(-50%, -120%) scale(1.2) rotate(-5deg)', opacity: '1' },
+                '100%': { transform: 'translate(-50%, -200%) scale(1) rotate(0deg)', opacity: '0' },
+              },
+              flashRow: {
+                '0%': { backgroundColor: '#fff', boxShadow: '0 0 30px #fff, inset 0 0 20px #fff', zIndex: '50' },
+                '100%': { backgroundColor: 'transparent', boxShadow: 'none', zIndex: '0' }
+              },
+              floatGlitch: {
+                '0%, 100%': { transform: 'translateY(0) scale(1)' },
+                '50%': { transform: 'translateY(-10px) scale(1.05)' },
+                '90%': { transform: 'translateY(2px) skewX(2deg)' }
+              },
+              ticker: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' }
+              },
+              cardFloat: {
+                '0%, 100%': { transform: 'translateY(0) rotate(12deg)' },
+                '50%': { transform: 'translateY(-20px) rotate(15deg)' }
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' }
+              },
+              slideInRight: {
+                  '0%': { transform: 'translateX(50px)', opacity: '0' },
+                  '100%': { transform: 'translateX(0)', opacity: '1' }
+              },
+              zoomIn: {
+                  '0%': { transform: 'scale(0.8)', opacity: '0' },
+                  '100%': { transform: 'scale(1)', opacity: '1' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .clip-jagged {
+          clip-path: polygon(
+            0 0,
+            100% 0,
+            100% 85%,
+            95% 100%,
+            5% 100%,
+            0 85%
+          );
+        }
+        
+        /* High Performance CSS Noise */
+        .scanlines {
+          background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0) 50%,
+            rgba(0, 0, 0, 0.2) 50%,
+            rgba(0, 0, 0, 0.2)
+          );
+          background-size: 100% 4px;
+        }
+        
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .bg-p5-pattern {
+          background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+          background-size: 20px 20px;
+        }
+        
+        .text-outline {
+          text-shadow: 
+            -1px -1px 0 #000,  
+             1px -1px 0 #000,
+            -1px  1px 0 #000,
+             1px  1px 0 #000;
+        }
+        
+        .text-stroke-white {
+            -webkit-text-stroke: 2px white;
+        }
+        
+        .text-glitch {
+           position: relative;
+        }
+        .text-glitch::before,
+        .text-glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .text-glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff2a6d;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch 5s infinite linear alternate-reverse;
+        }
+        .text-glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #05d9e8;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch 5s infinite linear alternate-reverse;
+        }
+      }
+    </style>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-p5-dark text-white overflow-hidden">
+    <div id="root"></div>
+    <div class="noise-overlay"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

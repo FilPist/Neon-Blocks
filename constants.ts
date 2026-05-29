@@ -1,0 +1,154 @@
+
+import { Tetromino, TetrominoType } from './types';
+
+// Standardized Neon Blocks Palette
+const COLORS = {
+  CYAN: '#05d9e8',    
+  BLUE: '#304ffe',    
+  ORANGE: '#ff9100',  
+  YELLOW: '#fcee0a',  
+  GREEN: '#00ff9d',   
+  PURPLE: '#d300c5',  
+  PINK: '#ff2a6d',    
+};
+
+export const STORAGE_KEY = 'neon_blocks_highscores';
+export const PROFILE_STORAGE_KEY = 'neon_blocks_profile';
+
+export const TETROMINOES: Record<TetrominoType, Tetromino> = {
+  [TetrominoType.I]: {
+    type: TetrominoType.I,
+    shape: [
+      [0, 0, 0, 0],
+      [1, 1, 1, 1],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ],
+    color: COLORS.CYAN,
+  },
+  [TetrominoType.J]: {
+    type: TetrominoType.J,
+    shape: [
+      [1, 0, 0],
+      [1, 1, 1],
+      [0, 0, 0],
+    ],
+    color: COLORS.BLUE,
+  },
+  [TetrominoType.L]: {
+    type: TetrominoType.L,
+    shape: [
+      [0, 0, 1],
+      [1, 1, 1],
+      [0, 0, 0],
+    ],
+    color: COLORS.ORANGE,
+  },
+  [TetrominoType.O]: {
+    type: TetrominoType.O,
+    shape: [
+      [1, 1],
+      [1, 1],
+    ],
+    color: COLORS.YELLOW,
+  },
+  [TetrominoType.S]: {
+    type: TetrominoType.S,
+    shape: [
+      [0, 1, 1],
+      [1, 1, 0],
+      [0, 0, 0],
+    ],
+    color: COLORS.GREEN,
+  },
+  [TetrominoType.T]: {
+    type: TetrominoType.T,
+    shape: [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 0, 0],
+    ],
+    color: COLORS.PURPLE,
+  },
+  [TetrominoType.Z]: {
+    type: TetrominoType.Z,
+    shape: [
+      [1, 1, 0],
+      [0, 1, 1],
+      [0, 0, 0],
+    ],
+    color: COLORS.PINK,
+  },
+};
+
+export const INITIAL_SPEED = 1000;
+export const SPEED_DECREMENT = 70; // Increased decrement for faster ramp-up
+export const MIN_SPEED = 80;
+
+export const ABILITIES = [
+  { id: 'wipe', name: 'ROW WIPE', type: 'active', cost: 100, desc: 'Clears the bottom-most row of blocks.', icon: 'Zap', cooldown: 30 },
+  { id: 'bomb', name: 'BOMB', type: 'active', cost: 250, desc: 'Clears a 5x5 area around the lowest point.', icon: 'Bomb', cooldown: 45 },
+  { id: 'freeze', name: 'TIME FREEZE', type: 'active', cost: 300, desc: 'Halts piece falling for 8 seconds.', icon: 'Clock', cooldown: 60 },
+  { id: 'swap', name: 'PIECE SWAP', type: 'active', cost: 150, desc: 'Swaps the current piece with the next one.', icon: 'RefreshCcw', cooldown: 20 },
+  { id: 'collapse', name: 'GRAVITY WELL', type: 'active', cost: 400, desc: 'Forces all blocks to fall down, filling gaps.', icon: 'ArrowDownToLine', cooldown: 75 },
+  { id: 'magnet', name: 'COIN MAGNET', type: 'passive', cost: 1000, desc: 'Doubles all coins earned from playing.', icon: 'Magnet' },
+];
+
+export const TRANSLATIONS = {
+  en: {
+    start: "INITIALIZE SEQUENCE",
+    abilitiesMode: "ABILITIES MODE",
+    shop: "UPGRADE SHOP",
+    options: "NEURAL CONFIG",
+    records: "LEADERBOARD",
+    quit: "TERMINATE",
+    settingsTitle: "SYSTEM SETTINGS",
+    sound: "MASTER VOLUME",
+    language: "INTERFACE LANG",
+    back: "RETURN",
+    ticker: "ATTENTION: SYSTEM OPTIMIZATION IN PROGRESS // ACCESSING NEON CORE // RUNNING PROTOCOL 1.0.5 // DATA FLOW STABILIZED //",
+    system: "CORE NAVIGATOR",
+    ready: "READY TO RUN",
+    paused: "SIGNAL PAUSED",
+    resume: "RECONNECT",
+    gameOver: "CORE CRASHED",
+    retry: "REBOOT SYSTEM",
+    score: "DATA COLLECTED",
+    best: "TOP RECORD",
+    level: "COMPLEXITY",
+    lines: "BLOCKS CLEARED",
+    velocity: "VELOCITY",
+    next: "QUEUED DATA",
+    loading: "SYNCING CORE...",
+    recordsTitle: "LEADERBOARD",
+    noRecords: "NO DATA FOUND"
+  },
+  it: {
+    start: "INIZIA SEQUENZA",
+    abilitiesMode: "MODALITÀ ABILITÀ",
+    shop: "NEGOZIO POTENZIAMENTI",
+    options: "CONFIG NEURALE",
+    records: "CLASSIFICA",
+    quit: "TERMINA",
+    settingsTitle: "IMPOSTAZIONI SISTEMA",
+    sound: "VOLUME MASTER",
+    language: "LINGUA INTERFACCIA",
+    back: "INDIETRO",
+    ticker: "ATTENZIONE: OTTIMIZZAZIONE SISTEMA IN CORSO // ACCESSO AL CORE NEON // PROTOCOLLO 1.0.5 ATTIVO // FLUSSO DATI STABILIZZATO //",
+    system: "NAVIGATORE CORE",
+    ready: "PRONTO AL LANCIO",
+    paused: "SEGNALE IN PAUSA",
+    resume: "RICONNETTI",
+    gameOver: "CRASH DI SISTEMA",
+    retry: "RIAVVIA CORE",
+    score: "DATI ESTRATTI",
+    best: "RECORD MIGLIORE",
+    level: "COMPLESSITÀ",
+    lines: "BLOCCHI PULITI",
+    velocity: "VELOCITÀ",
+    next: "PROSSIMO DATO",
+    loading: "SINCRONIZZAZIONE CORE...",
+    recordsTitle: "CLASSIFICA",
+    noRecords: "NESSUN DATO"
+  }
+};
