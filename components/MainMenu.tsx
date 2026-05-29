@@ -58,6 +58,13 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                         <div className="w-24 h-2 bg-white transform -skew-x-12" />
                         <div className="w-12 h-2 bg-p5-cyan transform -skew-x-12" />
                     </div>
+
+                    <div className="mt-12 transform -skew-x-12 rotate-[-2deg] transition-transform hover:scale-105">
+                        <div className="inline-flex items-center gap-3 bg-black/80 border-l-4 border-l-p5-purple border-y border-r border-white/10 px-6 py-3 shadow-[4px_4px_0_rgba(211,0,197,0.3)]">
+                            <span className="text-p5-cyan font-black font-p5-display tracking-widest animate-pulse">{"//"} ORIGIN</span>
+                            <span className="text-white font-bold font-p5-ui tracking-[0.2em] text-sm group-hover:text-p5-cyan transition-colors">FILIPPO PISTAFFA</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

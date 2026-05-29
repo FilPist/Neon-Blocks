@@ -194,6 +194,7 @@ const App: React.FC = () => {
       {introComplete && !showGame && profile.hasSeenOnboarding === false && (
           <OnboardingModal 
               isOpen={true} 
+              language={settings.language}
               onClose={() => {
                   setProfile(p => {
                       const np = { ...p, hasSeenOnboarding: true };
