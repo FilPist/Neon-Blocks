@@ -1,5 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { useTetris } from './hooks/useTetris';
 import Board from './components/Board';
 import { ScoreBoard, NextPiece, MenuButton, Modal } from './components/P5UI';
@@ -361,6 +362,7 @@ const App: React.FC = () => {
             });
         }} 
       />
+      <Analytics />
     </div>
   );
 };
