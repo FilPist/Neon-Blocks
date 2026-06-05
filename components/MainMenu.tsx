@@ -19,7 +19,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
     const [mounted, setMounted] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showRecords, setShowRecords] = useState(false);
-    const t = TRANSLATIONS[settings.language];
+    const [showPatchNotes, setShowPatchNotes] = useState(false);
+    const t = TRANSLATIONS[settings.language] as any;
 
     useEffect(() => {
         setMounted(true);
@@ -40,6 +41,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 flex flex-col items-center justify-center 
                 transition-all duration-1000 z-10
                 ${mounted && !isExiting ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-40'}
+                ${showPatchNotes ? 'lg:-translate-x-[40vw] opacity-0 lg:opacity-100' : ''}
             `}>
                 <div className="relative p-8 text-center flex flex-col items-center">
                     <div className="bg-p5-dark text-white font-p5-display text-7xl lg:text-9xl px-8 py-4 border-8 border-white shadow-neon-pink relative z-10 transform -rotate-3 animate-float-glitch">
@@ -75,10 +77,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 z-20
                 transition-all duration-1000 delay-100
                 ${mounted && !isExiting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'}
+                ${showPatchNotes ? 'lg:-translate-x-[40vw] opacity-0 lg:opacity-100' : ''}
             `}>
                 <div className="w-full max-w-md relative z-10 p-4 lg:p-0">
-                     <div className="flex flex-col gap-8 w-full transform rotate-1">
-                        <div className="text-white/80 font-p5-ui text-sm tracking-widest mb-4 border-b-2 border-p5-cyan/50 pb-2 flex justify-between items-end">
+                     <div className="flex flex-col gap-4 lg:gap-6 w-full transform rotate-1">
+                        <div className="text-white/80 font-p5-ui text-sm tracking-widest mb-2 lg:mb-4 border-b-2 border-p5-cyan/50 pb-2 flex justify-between items-end">
                              <div className="flex flex-col">
                                 <span className="text-[10px] opacity-50 uppercase">User Interface</span>
                                 <span className="text-p5-cyan font-bold tracking-widest">RUNNER_CORE.v5</span>
@@ -86,20 +89,20 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                              <span className="bg-p5-purple text-white px-3 py-1 text-xs font-bold animate-pulse">SYSTEM LIVE</span>
                         </div>
 
-                        <MenuButton label={t.start} onClick={() => onStart('classic')} primary />
-                        <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} />
-                        <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} />
-                        <MenuButton label={t.options} onClick={() => setShowSettings(true)} active={true} />
-                        <MenuButton label={t.records} onClick={() => setShowRecords(true)} active={true} />
+                        <MenuButton label={t.start} onClick={() => onStart('classic')} primary small />
+                        <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
+                        <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} small />
+                        <MenuButton label={t.options} onClick={() => setShowSettings(true)} active={true} small />
+                        <MenuButton label={t.records} onClick={() => setShowRecords(true)} active={true} small />
                         
-                        <div className="mt-4 flex justify-between text-p5-cyan font-p5-ui text-[10px] tracking-[0.2em] bg-white/5 backdrop-blur-sm p-3 border-l-4 border-p5-purple">
-                            <span>REVISION // 2024.X</span>
+                        <div className="mt-2 flex justify-between text-p5-cyan font-p5-ui text-[10px] tracking-[0.2em] bg-white/5 backdrop-blur-sm p-3 border-l-4 border-p5-purple">
+                            <span>REVISION // 1.0.6</span>
                             <span>ENCRYPTED_NEURAL_LINK</span>
                         </div>
                      </div>
                 </div>
 
-                <div className={`hidden lg:block absolute right-32 top-1/4 w-48 h-64 bg-black border-4 border-white animate-card-float shadow-neon-blue transform rotate-12 z-0 transition-all duration-700 ${isExiting ? 'translate-x-80 opacity-0 rotate-[60deg]' : ''}`}>
+                <div className={`hidden lg:block absolute right-32 top-1/4 w-48 h-64 bg-black border-4 border-white animate-card-float shadow-neon-blue transform rotate-12 z-0 transition-all duration-700 ${isExiting || showPatchNotes ? 'translate-x-80 opacity-0 rotate-[60deg]' : ''}`}>
                     <div className="absolute inset-0 bg-p5-pattern opacity-20" />
                     <div className="absolute inset-4 border-2 border-p5-cyan flex items-center justify-center overflow-hidden">
                          <div className="text-p5-cyan font-p5-display text-6xl opacity-20 transform -rotate-45">NB</div>
@@ -111,6 +114,67 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 <div className="whitespace-nowrap animate-ticker pl-full">
                     {t.ticker} {t.ticker}
                 </div>
+            </div>
+
+            {/* Patch Notes Small Box Trigger */}
+            <button
+                onClick={() => setShowPatchNotes(true)}
+                className={`absolute bottom-16 right-4 lg:right-12 z-40 bg-[#050510] border-2 border-p5-cyan px-4 py-2 font-p5-display text-p5-cyan tracking-widest text-sm xl:text-lg hover:bg-p5-cyan hover:text-black transition-all duration-300 transform -skew-x-12 cursor-pointer shadow-neon-cyan
+                ${showPatchNotes || isExiting ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}
+            >
+                <div className="transform skew-x-12">
+                    {t.patchNotes || "PATCH NOTES"}
+                </div>
+            </button>
+
+            {/* Patch Notes Sliding Panel */}
+            <div className={`
+                absolute top-0 right-0 bottom-12 w-full lg:w-[45vw] bg-[#050510]/95 border-l-4 border-p5-cyan
+                z-40 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]
+                flex flex-col
+                ${showPatchNotes ? 'translate-x-0' : 'translate-x-full pointer-events-none'}
+            `}>
+                <div className="flex justify-between items-center p-6 border-b-2 border-p5-cyan/30">
+                    <h2 className="text-3xl font-p5-display text-white tracking-widest uppercase transform rotate-1">
+                        {t.patchNotes || "PATCH NOTES"}
+                    </h2>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-8 lg:p-12 text-left font-p5-ui custom-scrollbar pb-24">
+                    <div className="border-l-4 border-p5-cyan bg-p5-cyan/5 p-6 mb-8 transform -skew-x-2">
+                        <div className="transform skew-x-2">
+                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.6 (CURRENT)</h3>
+                            <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
+                                <li><span className="text-p5-yellow font-bold">NEW:</span> Added HOLD PIECE functionality (Press C / Shift).</li>
+                                <li><span className="text-p5-yellow font-bold">NEW:</span> Playtime timer added to game view.</li>
+                                <li><span className="text-p5-purple font-bold">IMPROVED:</span> Responsive design for smaller screens (13" laptops).</li>
+                                <li><span className="text-p5-purple font-bold">IMPROVED:</span> Visual effects for hard drops (Vertical lines).</li>
+                                <li><span className="text-p5-purple font-bold">IMPROVED:</span> Relocated the "ACTIVE" diagnostic text to prevent obscuring the board.</li>
+                                <li><span className="text-white font-bold">FIXED:</span> Leaderboard now saves correctly for all game modes.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="border-l-4 border-p5-purple bg-p5-purple/5 p-6 transform -skew-x-2 opacity-70 hover:opacity-100 transition-opacity">
+                        <div className="transform skew-x-2">
+                            <h3 className="text-xl font-p5-display text-p5-purple mb-3 tracking-widest outline-text">VERSION 1.0.5 (GITHUB RELEASE)</h3>
+                            <ul className="list-disc list-inside space-y-2 text-white/70 text-sm">
+                                <li>Initial release on GitHub Pages.</li>
+                                <li>Added Abilities game mode with coin economy.</li>
+                                <li>Shop system implementation.</li>
+                                <li>Gamepad support & advanced sound effects.</li>
+                                <li>Onboarding tutorial added.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button 
+                    onClick={() => setShowPatchNotes(false)}
+                    className="absolute bottom-4 right-4 lg:right-12 z-50 bg-[#050510] border-2 border-p5-red px-4 py-2 font-p5-display text-p5-red tracking-widest text-sm xl:text-lg hover:bg-p5-red hover:text-white transition-all duration-300 transform -skew-x-12 cursor-pointer shadow-neon-pink"
+                >
+                    <div className="transform skew-x-12">CLOSE [X]</div>
+                </button>
             </div>
             
             <SettingsModal 

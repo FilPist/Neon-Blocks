@@ -13,9 +13,10 @@ interface BoardProps {
   } | null;
   isShaking: boolean;
   popups: Popup[];
+  hardDropTrails?: {col: number, color: string, id: number}[];
 }
 
-const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups }) => {
+const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropTrails = [] }) => {
   
   const { displayGrid } = useMemo(() => {
     const displayGrid = grid.map(row => row.map(cell => ({ ...cell, isGhost: false })));
@@ -127,6 +128,20 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups }) => {
                 )}
             </div>
 
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-10 p-[1px]">
+                {hardDropTrails.map((trail) => (
+                    <div 
+                        key={trail.id}
+                        className="absolute top-0 h-full animate-fade-out"
+                        style={{
+                            left: `${trail.col * 10}%`,
+                            width: '10%',
+                            background: `linear-gradient(to top, ${trail.color}88 0%, transparent 100%)`
+                        }}
+                    />
+                ))}
+            </div>
+
             {popups.map(popup => (
                 <div 
                     key={popup.id}
@@ -137,7 +152,7 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups }) => {
                     }}
                 >
                     <span 
-                        className="font-p5-display text-6xl text-white italic tracking-tighter drop-shadow-[4px_4px_0_rgba(0,0,0,1)] text-outline"
+                        className="font-p5-display text-4xl xl:text-6xl text-white italic tracking-tighter drop-shadow-[4px_4px_0_rgba(0,0,0,1)] text-outline"
                         style={{ color: popup.color, textShadow: `3px 3px 0px #000, 0 0 20px ${popup.color}` }}
                     >
                         {popup.text}
@@ -146,7 +161,7 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups }) => {
             ))}
         </div>
         
-        <div className="absolute -bottom-8 -left-8 bg-black text-white font-p5-display text-4xl px-6 py-2 transform rotate-3 border-2 border-p5-cyan z-20 shadow-neon-cyan">
+        <div className="absolute -bottom-8 -left-32 bg-black text-white font-p5-display text-4xl px-4 py-1 xl:px-6 xl:py-2 transform rotate-3 border-2 border-p5-cyan z-20 shadow-neon-cyan">
             <span className="text-glitch tracking-widest text-p5-cyan" data-text="ACTIVE">ACTIVE</span>
         </div>
     </div>

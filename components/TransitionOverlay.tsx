@@ -10,38 +10,43 @@ interface TransitionOverlayProps {
 }
 
 const TransitionOverlay: React.FC<TransitionOverlayProps> = ({ stage, language }) => {
-  if (stage === 'idle') return null;
   const t = TRANSLATIONS[language];
 
   return (
-    <div className="fixed inset-0 z-[150] pointer-events-none overflow-hidden">
+    <div className={`fixed inset-0 z-[150] pointer-events-none overflow-hidden ${stage === 'idle' ? 'invisible' : 'visible'}`}>
       {/* Bar 1: Deep Blue Base */}
       <div 
-        className={`absolute inset-0 bg-p5-blue transform transition-transform duration-600 ease-out-expo z-30`}
+        className="absolute inset-0 bg-p5-blue transform ease-out-expo z-30"
         style={{ 
             clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0% 100%)',
-            transform: stage === 'in' ? 'translateX(0)' : 'translateX(100%)',
-            transitionDelay: stage === 'in' ? '0ms' : '300ms'
+            transform: stage === 'in' ? 'translateX(0)' : stage === 'out' ? 'translateX(-100%)' : 'translateX(100%)',
+            transitionProperty: 'transform',
+            transitionDuration: stage === 'idle' ? '0ms' : '400ms',
+            transitionDelay: stage === 'in' ? '0ms' : stage === 'out' ? '150ms' : '0ms'
         }}
       />
 
       {/* Bar 2: Purple Slash */}
       <div 
-        className={`absolute inset-0 bg-p5-purple transform transition-transform duration-600 ease-out-expo z-40`}
+        className="absolute inset-0 bg-p5-purple transform ease-out-expo z-40"
         style={{ 
             clipPath: 'polygon(0 0, 120% 0, 80% 100%, -20% 100%)',
-            transform: stage === 'in' ? 'translateX(0)' : 'translateX(130%)',
-            transitionDelay: stage === 'in' ? '100ms' : '150ms'
+            transform: stage === 'in' ? 'translateX(0)' : stage === 'out' ? 'translateX(-130%)' : 'translateX(130%)',
+            transitionProperty: 'transform',
+            transitionDuration: stage === 'idle' ? '0ms' : '400ms',
+            transitionDelay: stage === 'in' ? '50ms' : stage === 'out' ? '75ms' : '0ms'
         }}
       />
 
-      {/* Bar 3: Pink Slash (Top) */}
+      {/* Bar 3: Cyan Base */}
       <div 
-        className={`absolute inset-0 bg-p5-red transform transition-transform duration-600 ease-out-expo z-50`}
+        className="absolute inset-0 bg-p5-cyan transform ease-out-expo z-50"
         style={{ 
             clipPath: 'polygon(0 0, 150% 0, 100% 100%, -50% 100%)',
-            transform: stage === 'in' ? 'translateX(0)' : 'translateX(160%)',
-            transitionDelay: stage === 'in' ? '200ms' : '0ms'
+            transform: stage === 'in' ? 'translateX(0)' : stage === 'out' ? 'translateX(-160%)' : 'translateX(160%)',
+            transitionProperty: 'transform',
+            transitionDuration: stage === 'idle' ? '0ms' : '400ms',
+            transitionDelay: stage === 'in' ? '100ms' : stage === 'out' ? '0ms' : '0ms'
         }}
       >
           {/* High Impact Loading Text */}
@@ -50,20 +55,27 @@ const TransitionOverlay: React.FC<TransitionOverlayProps> = ({ stage, language }
                  {t.loading.split('').map((char, i) => (
                     <span 
                         key={i} 
-                        className="font-p5-display text-7xl text-white inline-block opacity-0"
+                        className="font-p5-display text-7xl text-black inline-block opacity-0"
                         style={{ 
                             animationName: stage === 'in' ? 'letterReveal' : 'none',
-                            animationDuration: '0.4s',
+                            animationDuration: '0.2s',
                             animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
                             animationFillMode: 'both',
-                            animationDelay: `${0.4 + (i * 0.03)}s`
+                            animationDelay: `${0.1 + (i * 0.02)}s`
                         }}
                     >
                         {char}
                     </span>
                  ))}
               </div>
-              <div className={`h-1 bg-white transition-all duration-1000 ease-out-expo ${stage === 'in' ? 'w-full opacity-100' : 'w-0 opacity-0'}`} />
+              <div className={`h-1 bg-black transition-all ease-out-expo`}
+                   style={{
+                       transitionDuration: stage === 'idle' ? '0ms' : '300ms',
+                       transitionDelay: stage === 'in' ? '100ms' : '0ms',
+                       width: stage === 'in' ? '100%' : '0%',
+                       opacity: stage === 'in' ? 1 : 0
+                   }} 
+              />
           </div>
       </div>
     </div>

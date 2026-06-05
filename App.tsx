@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTetris } from './hooks/useTetris';
 import Board from './components/Board';
-import { ScoreBoard, NextPiece, MenuButton, Modal } from './components/P5UI';
+import { ScoreBoard, NextPiece, MenuButton, Modal, HoldPiece } from './components/P5UI';
 import P5Background from './components/P5Background';
 import MainMenu from './components/MainMenu';
 import TransitionOverlay, { TransitionStage } from './components/TransitionOverlay';
@@ -86,8 +86,17 @@ const App: React.FC = () => {
     startGame,
     quitGame,
     setIsPaused,
-    triggerAbility
+    triggerAbility,
+    holdPieceType,
+    playTime,
+    hardDropTrails
   } = useTetris(settings.soundVolume, handleCoinsEarned);
+
+  const formatTime = (seconds: number) => {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+  };
 
   const t = TRANSLATIONS[settings.language];
   const [transitionStage, setTransitionStage] = useState<TransitionStage>('idle');
@@ -162,9 +171,9 @@ const App: React.FC = () => {
               setTimeout(() => {
                   setTransitionStage('idle');
                   setIsMenuExiting(false);
-              }, 700); 
-          }, 1000); 
-      }, 500); 
+              }, 600); 
+          }, 450); 
+      }, 300); 
   }, [startGame]);
 
   const handleQuit = useCallback(() => {
@@ -173,8 +182,8 @@ const App: React.FC = () => {
         quitGame();
         setShowGame(false);
         setTransitionStage('out');
-        setTimeout(() => setTransitionStage('idle'), 700);
-      }, 1000);
+        setTimeout(() => setTransitionStage('idle'), 600);
+      }, 450);
   }, [quitGame]);
 
   // Quick mute toggle for game UI
@@ -221,21 +230,28 @@ const App: React.FC = () => {
               
               {/* Left Column: Stats */}
               <div className={`
-                    hidden lg:flex flex-col items-end justify-center h-full w-full pr-16 space-y-16 relative z-20 
+                    hidden lg:flex flex-col items-end justify-center h-full w-full pr-4 xl:pr-16 space-y-4 xl:space-y-10 2xl:space-y-16 relative z-20 
                     transition-all duration-700 ease-out-expo origin-right
                     ${isPaused && !gameOver ? '-translate-x-[100vw] rotate-[-5deg] opacity-0' : 'translate-x-0 rotate-0 opacity-100 animate-slam-in'}
               `}>
-                  <div className="relative group cursor-default transform scale-75 origin-right animate-float-glitch">
-                      <div className="bg-p5-dark text-white font-p5-display text-6xl px-6 py-3 border-4 border-white shadow-neon-pink relative z-10">
+                  <div className="relative group cursor-default transform scale-60 xl:scale-75 origin-right animate-float-glitch">
+                      <div className="bg-p5-dark text-white font-p5-display text-5xl xl:text-6xl px-4 py-2 xl:px-6 xl:py-3 border-4 border-white shadow-neon-pink relative z-10">
                           NEON<span className="text-p5-red">BLOCKS</span>
                       </div>
                   </div>
                   <ScoreBoard score={score} level={level} lines={lines} speedRatio={speedRatio} highScore={bestScore} />
+                  
+                  <div className="flex gap-4 items-end justify-end w-full">
+                      <div className="font-p5-display text-2xl xl:text-4xl text-p5-cyan border-2 border-p5-cyan px-4 py-1 xl:px-6 xl:py-2 bg-black shadow-neon-cyan transform skew-x-[-10deg]">
+                          {formatTime(playTime)}
+                      </div>
+                      <HoldPiece type={holdPieceType} />
+                  </div>
               </div>
 
               {/* Center: The Board */}
               <div className={`
-                    relative flex items-center justify-center h-full py-4 lg:py-8 z-10 
+                    relative flex items-center justify-center h-full py-2 lg:py-4 z-10 
                     transition-all duration-700 ease-out-expo
                     ${isPaused && !gameOver ? 'scale-75 opacity-20 blur-sm brightness-50 translate-y-10' : 'scale-100 opacity-100 animate-slam-in'}
               `}>
@@ -244,24 +260,25 @@ const App: React.FC = () => {
                     piece={piece} 
                     isShaking={isShaking} 
                     popups={popups} 
+                    hardDropTrails={hardDropTrails}
                   />
               </div>
 
               {/* Right Column: Next & Controls */}
               <div className={`
-                    hidden lg:flex flex-col items-start justify-center h-full w-full pl-16 space-y-12 relative z-20 
+                    hidden lg:flex flex-col items-start justify-center h-full w-full pl-4 xl:pl-16 space-y-3 xl:space-y-8 2xl:space-y-12 relative z-20 
                     transition-all duration-700 ease-out-expo origin-left
                     ${isPaused && !gameOver ? 'translate-x-[100vw] rotate-[5deg] opacity-0' : 'translate-x-0 rotate-0 opacity-100 animate-slam-in'}
               `}>
                   <NextPiece type={nextPieceType} />
                   
                   {gameMode === 'abilities' && (
-                      <div className="flex flex-col gap-2 w-full max-w-[280px]">
-                          <div className="text-white font-p5-display text-2xl flex justify-between">
+                      <div className="flex flex-col gap-1.5 w-full max-w-[240px] xl:max-w-[280px]">
+                          <div className="text-white font-p5-display text-lg xl:text-2xl flex justify-between">
                               <span>COINS</span>
                               <span className="text-p5-cyan">{profile.coins}</span>
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-1.5">
                               {profile.unlockedAbilities.map(id => {
                                   const ab = ABILITIES.find(a => a.id === id);
                                   if (!ab) return null;
@@ -270,9 +287,9 @@ const App: React.FC = () => {
                                   
                                   if (ab.type === 'passive') {
                                       return (
-                                          <div key={id} className="bg-black/50 border-2 border-white/10 p-2 flex flex-col items-center justify-center gap-1 text-white/40">
-                                              <IconComponent size={20} className="mt-2" />
-                                              <span className="text-[10px] uppercase font-bold tracking-wider text-center leading-tight">{ab.name}</span>
+                                          <div key={id} className="bg-black/50 border border-white/10 p-1.5 flex flex-col items-center justify-center gap-0.5 text-white/40">
+                                              <IconComponent className="w-4 h-4 xl:w-5 xl:h-5 mt-1" />
+                                              <span className="text-[9px] uppercase font-bold tracking-wider text-center leading-tight">{ab.name}</span>
                                           </div>
                                       );
                                   }
@@ -286,15 +303,15 @@ const App: React.FC = () => {
                                   return (
                                       <button 
                                           key={id}
-                                          className={`bg-black border-2 border-white/20 p-2 flex flex-col items-center justify-center gap-1 transition-colors relative group ${cooldowns[id] > 0 ? 'opacity-50 pointer-events-none' : 'hover:border-p5-cyan hover:text-p5-cyan active:scale-95 text-white/70'}`}
+                                          className={`bg-black border border-white/20 p-1.5 flex flex-col items-center justify-center gap-0.5 transition-colors relative group ${cooldowns[id] > 0 ? 'opacity-50 pointer-events-none' : 'hover:border-p5-cyan hover:text-p5-cyan active:scale-95 text-white/70'}`}
                                           onClick={() => handleTriggerAbility(id)}
                                       >
-                                          <div className="absolute top-0 right-1 text-p5-cyan/50 font-p5-display text-sm group-hover:text-p5-cyan transition-colors">[{hotkeyNumber}]</div>
-                                          <IconComponent size={20} className={`mt-2 ${cooldowns[id] > 0 ? '' : 'group-hover:animate-pulse'}`} />
-                                          <span className="text-[10px] uppercase font-bold tracking-wider text-center leading-tight">{ab.name}</span>
+                                          <div className="absolute top-0 right-1 text-p5-cyan/50 font-p5-display text-xs xl:text-sm group-hover:text-p5-cyan transition-colors">[{hotkeyNumber}]</div>
+                                          <IconComponent className={`w-4 h-4 xl:w-5 xl:h-5 mt-1 ${cooldowns[id] > 0 ? '' : 'group-hover:animate-pulse'}`} />
+                                          <span className="text-[9px] uppercase font-bold tracking-wider text-center leading-tight">{ab.name}</span>
                                           {cooldowns[id] > 0 && (
                                               <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-                                                  <span className="text-p5-red font-p5-display text-2xl animate-pulse">{cooldowns[id]}</span>
+                                                  <span className="text-p5-red font-p5-display text-lg xl:text-2xl animate-pulse">{cooldowns[id]}</span>
                                               </div>
                                           )}
                                       </button>
@@ -304,13 +321,13 @@ const App: React.FC = () => {
                       </div>
                   )}
 
-                  <div className="flex flex-col gap-6 w-full max-w-[280px]">
+                  <div className="flex flex-col gap-3 xl:gap-6 w-full max-w-[240px] xl:max-w-[280px]">
                       <MenuButton label={isPaused ? t.resume : t.paused} onClick={() => setIsPaused()} active={!gameOver} primary />
-                      <div className="flex gap-4 w-full">
-                            <button onClick={toggleMute} className="flex-1 bg-p5-dark text-white p-4 border-2 border-p5-cyan hover:bg-p5-cyan hover:text-black transition-all transform hover:rotate-3 shadow-neon-cyan flex items-center justify-center">
-                              {settings.soundVolume > 0 ? <Volume2 size={28} /> : <VolumeX size={28} />}
+                      <div className="flex gap-2.5 xl:gap-4 w-full">
+                            <button onClick={toggleMute} className="flex-1 bg-p5-dark text-white p-2 xl:p-4 border border-p5-cyan hover:bg-p5-cyan hover:text-black transition-all transform hover:rotate-3 shadow-neon-cyan flex items-center justify-center">
+                              {settings.soundVolume > 0 ? <Volume2 className="w-5 h-5 xl:w-7 xl:h-7" /> : <VolumeX className="w-5 h-5 xl:w-7 xl:h-7" />}
                             </button>
-                            <button onClick={handleQuit} className="flex-1 bg-p5-dark text-p5-red p-4 border-2 border-p5-red hover:bg-p5-red hover:text-white transition-all transform hover:-rotate-3 shadow-neon-pink font-bold flex items-center justify-center uppercase tracking-widest">{t.quit}</button>
+                            <button onClick={handleQuit} className="flex-1 bg-p5-dark text-p5-red p-2 xl:p-4 border border-p5-red hover:bg-p5-red hover:text-white transition-all transform hover:-rotate-3 shadow-neon-pink font-bold flex items-center justify-center uppercase tracking-widest text-sm xl:text-base">{t.quit}</button>
                       </div>
                   </div>
               </div>

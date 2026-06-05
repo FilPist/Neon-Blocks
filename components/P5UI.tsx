@@ -10,7 +10,8 @@ export const NeonContainer: React.FC<{
     rotated?: boolean;
     black?: boolean;
     glass?: boolean;
-}> = ({ children, className = '', rotated = true, black = false, glass = false }) => {
+    pSize?: 'compact' | 'normal';
+}> = ({ children, className = '', rotated = true, black = false, glass = false, pSize = 'normal' }) => {
     return (
         <div className={`relative group ${className}`}>
             <div className={`
@@ -23,7 +24,7 @@ export const NeonContainer: React.FC<{
                 ${rotated ? 'transform -rotate-1' : ''}
             `} />
             
-            <div className="relative z-10 p-6">
+            <div className={`relative z-10 ${pSize === 'compact' ? 'p-3 xl:p-6' : 'p-6'}`}>
                 {children}
             </div>
         </div>
@@ -32,46 +33,46 @@ export const NeonContainer: React.FC<{
 
 export const ScoreBoard: React.FC<{ score: number; level: number; lines: number; speedRatio: number; highScore: number }> = ({ score, level, lines, speedRatio, highScore }) => {
     return (
-        <div className="relative mb-8 w-full max-w-[320px]">
-            <div className="absolute -top-6 -left-2 z-30 transform -rotate-3">
-                <div className="bg-p5-cyan text-black px-4 py-1 font-p5-display text-2xl border-2 border-white shadow-hard-black skew-x-[-10deg]">
+        <div className="relative w-full max-w-[260px] xl:max-w-[320px]">
+            <div className="absolute -top-5 -left-2 z-30 transform -rotate-3">
+                <div className="bg-p5-cyan text-black px-3 py-0.5 font-p5-display text-lg xl:text-2xl border-2 border-white shadow-hard-black skew-x-[-10deg]">
                     CORE_DIAGNOSTICS
                 </div>
             </div>
 
-            <NeonContainer glass rotated={false} className="w-full mt-4">
-                <div className="flex flex-col font-p5-ui text-white space-y-4">
+            <NeonContainer glass rotated={false} className="w-full mt-2" pSize="compact">
+                <div className="flex flex-col font-p5-ui text-white space-y-2 xl:space-y-4">
                     {/* Main Score */}
-                    <div className="flex flex-col border-b border-white/20 pb-4">
-                         <span className="text-xl text-p5-cyan uppercase font-bold tracking-[0.2em] mb-1 drop-shadow-md">Data Extracted</span>
-                         <span className="text-6xl font-p5-display tracking-tight leading-none text-white drop-shadow-[3px_3px_0_#ff2a6d]">
+                    <div className="flex flex-col border-b border-white/20 pb-2 xl:pb-4">
+                         <span className="text-sm xl:text-xl text-p5-cyan uppercase font-bold tracking-[0.2em] mb-0.5 xl:mb-1 drop-shadow-md">Data Extracted</span>
+                         <span className="text-3xl xl:text-6xl font-p5-display tracking-tight leading-none text-white drop-shadow-[2px_2px_0_#ff2a6d] xl:drop-shadow-[3px_3px_0_#ff2a6d]">
                             {score.toLocaleString()}
                          </span>
                          {/* Best Score Mini */}
-                         <div className="flex justify-between items-center mt-2 opacity-70 text-xs tracking-widest uppercase">
+                         <div className="flex justify-between items-center mt-1 xl:mt-2 opacity-70 text-[10px] xl:text-xs tracking-widest uppercase">
                              <span>Best Record</span>
                              <span className="text-p5-yellow font-bold">{Math.max(score, highScore).toLocaleString()}</span>
                          </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-2 xl:gap-4">
                         <div className="flex flex-col">
-                            <span className="text-p5-purple uppercase tracking-widest text-xs font-bold opacity-80">Complexity</span>
-                            <span className="text-4xl font-p5-display text-p5-yellow drop-shadow-md">{level}</span>
+                            <span className="text-p5-purple uppercase tracking-widest text-[10px] xl:text-xs font-bold opacity-80">Complexity</span>
+                            <span className="text-2xl xl:text-4xl font-p5-display text-p5-yellow drop-shadow-md">{level}</span>
                         </div>
                         <div className="flex flex-col text-right">
-                            <span className="text-p5-blue uppercase tracking-widest text-xs font-bold opacity-80">Optimized</span>
-                            <span className="text-4xl font-p5-display text-white drop-shadow-md">{lines}</span>
+                            <span className="text-p5-blue uppercase tracking-widest text-[10px] xl:text-xs font-bold opacity-80">Optimized</span>
+                            <span className="text-2xl xl:text-4xl font-p5-display text-white drop-shadow-md">{lines}</span>
                         </div>
                     </div>
 
                     {/* Velocity Gauge */}
-                    <div className="pt-2">
-                        <div className="flex justify-between items-end mb-1">
-                            <span className="text-p5-red uppercase tracking-widest text-xs font-bold animate-pulse">Velocity</span>
-                            <span className="text-white text-xs font-mono">{(speedRatio * 100).toFixed(0)}%</span>
+                    <div className="pt-1">
+                        <div className="flex justify-between items-end mb-0.5">
+                            <span className="text-p5-red uppercase tracking-widest text-[10px] xl:text-xs font-bold animate-pulse">Velocity</span>
+                            <span className="text-white text-[10px] xl:text-xs font-mono">{(speedRatio * 100).toFixed(0)}%</span>
                         </div>
-                        <div className="w-full h-3 bg-black border border-white/30 skew-x-[-15deg] overflow-hidden relative">
+                        <div className="w-full h-2 xl:h-3 bg-black border border-white/30 skew-x-[-15deg] overflow-hidden relative">
                              {/* Gradient Bar */}
                              <div 
                                 className="h-full bg-gradient-to-r from-p5-blue via-p5-purple to-p5-red transition-all duration-300 ease-out"
@@ -91,24 +92,24 @@ export const NextPiece: React.FC<{ type: TetrominoType }> = ({ type }) => {
     const piece = TETROMINOES[type];
     
     return (
-        <div className="relative w-48 h-48 mb-8 transform rotate-2">
-            <div className="absolute -top-4 -right-4 z-30 bg-black text-p5-cyan px-4 py-1 font-p5-display text-xl border-2 border-p5-cyan shadow-neon-cyan whitespace-nowrap transform skew-x-12">
+        <div className="relative w-32 h-32 xl:w-48 xl:h-48 transform rotate-2">
+            <div className="absolute -top-4 -right-2 xl:-right-4 z-30 bg-black text-p5-cyan px-3 py-0.5 xl:px-4 xl:py-1 font-p5-display text-base xl:text-xl border-2 border-p5-cyan shadow-neon-cyan whitespace-nowrap transform skew-x-12">
                 BUFFER_LOAD
             </div>
             
             <div className="absolute inset-0 bg-black/80 border-4 border-p5-blue clip-jagged shadow-neon-blue flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-p5-pattern opacity-10"></div>
-                <div className="relative z-10 grid gap-1 transform scale-125" style={{ 
+                <div className="relative z-10 grid gap-1 transform scale-100 xl:scale-125" style={{ 
                      gridTemplateColumns: `repeat(${piece.shape[0].length}, 1fr)`,
                  }}>
                     {piece.shape.map((row, y) => 
                         row.map((cell, x) => (
-                            <div key={`${x}-${y}`} className={`w-6 h-6 ${cell ? '' : 'transparent'}`} 
+                            <div key={`${x}-${y}`} className={`w-4 h-4 xl:w-6 xl:h-6 ${cell ? '' : 'transparent'}`} 
                                  style={{ 
                                      backgroundColor: cell ? piece.color : 'transparent',
                                      border: cell ? '2px solid rgba(255,255,255,0.8)' : 'none',
                                      boxShadow: cell ? `0 0 15px ${piece.color}` : 'none'
-                                }}>
+                                 }}>
                             </div>
                         ))
                     )}
@@ -118,14 +119,48 @@ export const NextPiece: React.FC<{ type: TetrominoType }> = ({ type }) => {
     );
 };
 
-export const MenuButton: React.FC<{ onClick: () => void; label: string; active?: boolean; primary?: boolean }> = ({ onClick, label, active = true, primary = false }) => {
+export const HoldPiece: React.FC<{ type: TetrominoType | null }> = ({ type }) => {
+    return (
+        <div className="relative w-24 h-24 xl:w-32 xl:h-32 transform -rotate-2">
+            <div className="absolute -top-3 -left-2 xl:-left-4 z-30 bg-black text-p5-purple px-2 py-0.5 xl:px-3 xl:py-1 font-p5-display text-sm xl:text-lg border-2 border-p5-purple shadow-neon-purple whitespace-nowrap transform skew-x-[-12deg]">
+                HOLD_BUFFER
+            </div>
+            
+            <div className="absolute inset-0 bg-black/80 border-2 border-p5-purple clip-jagged shadow-neon-purple flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-p5-pattern opacity-10"></div>
+                {type && (
+                    <div className="relative z-10 grid gap-1 transform scale-75 xl:scale-90" style={{ 
+                         gridTemplateColumns: `repeat(${TETROMINOES[type].shape[0].length}, 1fr)`,
+                     }}>
+                        {TETROMINOES[type].shape.map((row, y) => 
+                            row.map((cell, x) => (
+                                <div key={`${x}-${y}`} className={`w-3 h-3 xl:w-4 xl:h-4 ${cell ? '' : 'transparent'}`} 
+                                     style={{ 
+                                         backgroundColor: cell ? TETROMINOES[type].color : 'transparent',
+                                         border: cell ? '1px solid rgba(255,255,255,0.8)' : 'none',
+                                         boxShadow: cell ? `0 0 10px ${TETROMINOES[type].color}` : 'none'
+                                     }}>
+                                </div>
+                            ))
+                        )}
+                     </div>
+                )}
+                {!type && (
+                    <div className="text-white/20 font-p5-display text-xs xl:text-sm tracking-widest">[EMPTY]</div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export const MenuButton: React.FC<{ onClick: () => void; label: string; active?: boolean; primary?: boolean; small?: boolean }> = ({ onClick, label, active = true, primary = false, small = false }) => {
     return (
         <button 
             onClick={onClick}
             disabled={!active}
             className={`
-                relative group w-full py-5 px-8 
-                font-p5-display text-3xl tracking-widest uppercase
+                relative group w-full ${small ? 'py-2 xl:py-3 px-4 xl:px-6' : 'py-3 xl:py-5 px-4 xl:px-8'} 
+                font-p5-display ${small ? 'text-base xl:text-2xl' : 'text-lg xl:text-3xl'} tracking-widest uppercase
                 transition-all duration-100 active:scale-95
                 ${active ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
             `}

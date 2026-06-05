@@ -43,6 +43,10 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
   const [popups, setPopups] = useState<Popup[]>([]);
   const [highScores, setHighScores] = useState<HighScore[]>([]);
   const [speedRatio, setSpeedRatio] = useState(0); // 0 to 1
+  const [holdPieceType, setHoldPieceType] = useState<TetrominoType | null>(null);
+  const [hasHeld, setHasHeld] = useState(false);
+  const [playTime, setPlayTime] = useState(0);
+  const [hardDropTrails, setHardDropTrails] = useState<{col: number, color: string, id: number}[]>([]);
 
   const comboRef = useRef(0);
 
@@ -56,6 +60,9 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     gameOver: false,
     isPaused: false,
     isPlaying: false,
+    holdPieceType: null as TetrominoType | null,
+    hasHeld: false,
+    playTime: 0
   });
 
   // Load High Scores
@@ -254,8 +261,42 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     
     setGrid(finalGrid);
     s.piece = null;
+    s.hasHeld = false;
+    setHasHeld(false);
     spawnPiece();
   }, [spawnPiece, triggerShake, addPopup]);
+
+  const holdPiece = useCallback(() => {
+    const s = stateRef.current;
+    if (!s.piece || s.gameOver || s.isPaused || !s.isPlaying || s.hasHeld) return;
+
+    if (s.holdPieceType === null) {
+        s.holdPieceType = s.piece.type;
+        setHoldPieceType(s.holdPieceType);
+        spawnPiece();
+    } else {
+        const currentType = s.piece.type;
+        const holdType = s.holdPieceType;
+        s.holdPieceType = currentType;
+        setHoldPieceType(currentType);
+        
+        const newTemplate = TETROMINOES[holdType];
+        const initialX = Math.floor(BOARD_WIDTH / 2) - Math.floor(newTemplate.shape[0].length / 2);
+        
+        s.piece = {
+            type: newTemplate.type,
+            shape: newTemplate.shape,
+            x: initialX,
+            y: 0,
+            color: newTemplate.color,
+        };
+        setPiece({...s.piece});
+    }
+    
+    s.hasHeld = true;
+    setHasHeld(true);
+    playSound('move', volumeRef.current);
+  }, [spawnPiece]);
 
   const move = useCallback((dirX: number, dirY: number) => {
     const s = stateRef.current;
@@ -324,9 +365,30 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     const s = stateRef.current;
     if (!s.piece || s.gameOver || s.isPaused || !s.isPlaying) return;
 
+    const startY = s.piece.y;
     let tempY = s.piece.y;
     while (!checkCollision(s.piece.shape, s.piece.x, tempY + 1, s.grid)) {
       tempY++;
+    }
+
+    if (tempY > startY) {
+        const pieceGridCols = new Set<number>();
+        for (let r = 0; r < s.piece.shape.length; r++) {
+            for (let c = 0; c < s.piece.shape[r].length; c++) {
+                if (s.piece.shape[r][c] !== 0) {
+                    pieceGridCols.add(s.piece.x + c);
+                }
+            }
+        }
+        const newTrails = Array.from(pieceGridCols).map(col => ({
+            col,
+            color: s.piece!.color,
+            id: Date.now() + Math.random()
+        }));
+        setHardDropTrails(prev => [...prev, ...newTrails]);
+        setTimeout(() => {
+            setHardDropTrails(prev => prev.filter(t => !newTrails.some(nt => nt.id === t.id)));
+        }, 300);
     }
 
     s.piece.y = tempY;
@@ -346,15 +408,11 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
       if (s.isPlaying && !s.isPaused && !s.gameOver) {
         dropCounterRef.current += deltaTime;
         
+        // update playtime state in stateRef
+        s.playTime += deltaTime;
+        
         // Calculate speed
         const currentSpeed = Math.max(MIN_SPEED, INITIAL_SPEED - (s.level - 1) * SPEED_DECREMENT);
-        
-        // Update speed ratio for UI
-        const ratio = Math.min(1, Math.max(0, (INITIAL_SPEED - currentSpeed) / (INITIAL_SPEED - MIN_SPEED)));
-        // We defer this state update to avoid heavy rerenders every frame
-        // Only update if it changed significantly, or do it outside the loop if possible
-        // For smoothness, we can check inside the component, but here we set it.
-        // Actually, let's just use s.level for the ratio calc in the loop to minimize setState calls
         
         if (dropCounterRef.current > currentSpeed) {
           drop(); 
@@ -377,6 +435,15 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
       setSpeedRatio(ratio);
   }, [level]);
 
+  // Sync playtime separately every second to avoid huge rerenders
+  useEffect(() => {
+      if (!isPlaying || isPaused || gameOver) return;
+      const interval = setInterval(() => {
+          setPlayTime(Math.floor(stateRef.current.playTime / 1000));
+      }, 1000);
+      return () => clearInterval(interval);
+  }, [isPlaying, isPaused, gameOver]);
+
   const togglePause = useCallback(() => {
       if (!stateRef.current.isPlaying || stateRef.current.gameOver) return;
       const newVal = !stateRef.current.isPaused;
@@ -394,7 +461,10 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
         level: 1,
         gameOver: false,
         isPaused: false,
-        isPlaying: true
+        isPlaying: true,
+        holdPieceType: null,
+        hasHeld: false,
+        playTime: 0
      };
      setGrid(stateRef.current.grid);
      setScore(0);
@@ -406,6 +476,10 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
      setIsPaused(false);
      setIsPlaying(true);
      setNextPieceType(stateRef.current.nextPieceType);
+     setHoldPieceType(null);
+     setHasHeld(false);
+     setPlayTime(0);
+     setHardDropTrails([]);
      spawnPiece();
      setPopups([]);
      comboRef.current = 0;
@@ -434,12 +508,13 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
         case 'q': case 'Q': case 'z': case 'Z': case 'Control': rotate(-1); break;
         case ' ': hardDrop(); break;
         case 'p': case 'P': case 'Escape': togglePause(); break;
+        case 'c': case 'C': case 'Shift': holdPiece(); break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [move, rotate, hardDrop, togglePause]);
+  }, [move, rotate, hardDrop, togglePause, holdPiece]);
 
   const triggerAbility = useCallback((abilityId: string) => {
     const s = stateRef.current;
@@ -560,6 +635,10 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     startGame,
     quitGame,
     setIsPaused: togglePause,
-    triggerAbility
+    triggerAbility,
+    holdPieceType,
+    holdPiece,
+    playTime,
+    hardDropTrails
   };
 };
