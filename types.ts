@@ -68,9 +68,27 @@ export interface GameState {
 
 export type Language = 'en' | 'it';
 
+export interface Keybindings {
+  moveLeft: string;
+  moveRight: string;
+  softDrop: string;
+  hardDrop: string;
+  rotateCW: string;
+  rotateCCW: string;
+  rotate180: string;
+  holdPiece: string;
+  pause: string;
+}
+
+export type ControlsMode = 'classic' | 'custom';
+
 export interface Settings {
   soundVolume: number; // 0 to 100
   language: Language;
+  controlsMode: ControlsMode;
+  keybindings: Keybindings;
+  sdf: number; // Soft Drop Factor
+  screenShake: boolean;
 }
 
 export const BOARD_WIDTH = 10;

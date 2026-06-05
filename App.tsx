@@ -5,21 +5,27 @@ import Board from './components/Board';
 import { ScoreBoard, NextPiece, MenuButton, Modal, HoldPiece } from './components/P5UI';
 import P5Background from './components/P5Background';
 import MainMenu from './components/MainMenu';
+import SettingsModal from './components/SettingsModal';
 import TransitionOverlay, { TransitionStage } from './components/TransitionOverlay';
 import IntroSequence from './components/IntroSequence';
 import PauseMenu from './components/PauseMenu';
 import ShopModal from './components/ShopModal';
 import OnboardingModal from './components/OnboardingModal';
 import { Settings, Profile, GameMode, HighScore } from './types';
-import { TRANSLATIONS, PROFILE_STORAGE_KEY, ABILITIES } from './constants';
+import { TRANSLATIONS, PROFILE_STORAGE_KEY, SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS, ABILITIES } from './constants';
 import * as Icons from 'lucide-react';
 import { Volume2, VolumeX } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [settings, setSettings] = useState<Settings>({
-      soundVolume: 50,
-      language: 'en'
-  });
+  const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
+
+  const setSettings = useCallback((newSettings: Settings | ((prev: Settings) => Settings)) => {
+      setSettingsState(prev => {
+          const updated = typeof newSettings === 'function' ? newSettings(prev) : newSettings;
+          localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+      });
+  }, []);
 
   const [profile, setProfile] = useState<Profile>({
       coins: 0,
@@ -31,6 +37,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
       try {
+          const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+          if (savedSettings) {
+              const parsed = JSON.parse(savedSettings);
+              setSettingsState({ ...DEFAULT_SETTINGS, ...parsed, keybindings: { ...DEFAULT_SETTINGS.keybindings, ...(parsed.keybindings || {}) } });
+          }
+
           const savedProfile = localStorage.getItem(PROFILE_STORAGE_KEY);
           if (savedProfile) {
               const parsed = JSON.parse(savedProfile);
@@ -90,7 +102,7 @@ const App: React.FC = () => {
     holdPieceType,
     playTime,
     hardDropTrails
-  } = useTetris(settings.soundVolume, handleCoinsEarned);
+  } = useTetris(settings.soundVolume, handleCoinsEarned, settings);
 
   const formatTime = (seconds: number) => {
       const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -144,8 +156,14 @@ const App: React.FC = () => {
          });
          
          const key = e.key;
-         if (['1', '2', '3', '4', '5', '6'].includes(key)) {
-             const index = parseInt(key) - 1;
+         if (['1', '3', '4', '5', '6'].includes(key)) {
+             let index = -1;
+             if (key === '1') index = 0;
+             else if (key === '3') index = 1;
+             else if (key === '4') index = 2;
+             else if (key === '5') index = 3;
+             else if (key === '6') index = 4;
+             
              if (index >= 0 && index < activeAbilities.length) {
                  handleTriggerAbility(activeAbilities[index]);
              }
@@ -186,9 +204,21 @@ const App: React.FC = () => {
       }, 450);
   }, [quitGame]);
 
+  const [showSettings, setShowSettings] = useState(false);
+  const [isControlsOpen, setIsControlsOpen] = useState(false);
+
   // Quick mute toggle for game UI
   const toggleMute = () => {
       setSettings(s => ({ ...s, soundVolume: s.soundVolume > 0 ? 0 : 50 }));
+  };
+
+  const [showCookieConsent, setShowCookieConsent] = useState(() => {
+      return !localStorage.getItem('cookieConsent');
+  });
+
+  const acceptCookies = () => {
+      localStorage.setItem('cookieConsent', 'true');
+      setShowCookieConsent(false);
   };
 
   return (
@@ -198,7 +228,24 @@ const App: React.FC = () => {
       
       {!introComplete && <IntroSequence onComplete={() => setIntroComplete(true)} />}
 
-      <TransitionOverlay stage={transitionStage} language={settings.language} />
+      <TransitionOverlay stage={transitionStage} />
+
+      {showCookieConsent && (
+          <div className="fixed bottom-0 left-0 right-0 z-[100] bg-black border-t-4 border-p5-cyan p-4 flex flex-col md:flex-row items-center justify-between shadow-[0_-10px_30px_rgba(5,217,232,0.2)] animate-slam-in">
+              <div className="text-white mb-4 md:mb-0 max-w-3xl transform skew-x-2">
+                  <h3 className="font-p5-display text-2xl text-p5-cyan mb-1">COOKIE & DATA POLICY</h3>
+                  <p className="text-sm text-white/80">
+                      This application uses local browser storage (cookies) to save your settings, preferences, and game high scores in order to provide a persistent experience. By continuing to use this site, you consent to our use of local storage. You can delete your data at any time from the settings menu.
+                  </p>
+              </div>
+              <button 
+                  onClick={acceptCookies}
+                  className="bg-p5-cyan text-black px-8 py-3 font-p5-display text-xl transform -skew-x-12 hover:bg-white hover:text-p5-cyan transition-colors shadow-[4px_4px_0_#ff2a6d]"
+              >
+                  <span className="transform skew-x-12 block">ACCEPT</span>
+              </button>
+          </div>
+      )}
 
       {introComplete && !showGame && profile.hasSeenOnboarding === false && (
           <OnboardingModal 
@@ -224,6 +271,9 @@ const App: React.FC = () => {
                 highScores={highScores}
                 profile={profile}
                 onOpenShop={() => setShowShop(true)}
+                onOpenSettings={() => setShowSettings(true)}
+                isSettingsOpen={showSettings}
+                isControlsOpen={isControlsOpen}
             />
         ) : (
             <div className="relative z-10 w-full h-screen grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-0 items-center justify-items-center perspective-1000">
@@ -298,7 +348,14 @@ const App: React.FC = () => {
                                       const uAb = ABILITIES.find(a => a.id === uId);
                                       return uAb && uAb.type === 'active';
                                   });
-                                  const hotkeyNumber = activeAbilities.indexOf(id) + 1;
+                                  const activeIndex = activeAbilities.indexOf(id);
+                                  
+                                  let hotkeyNumber = "1";
+                                  if (activeIndex === 0) hotkeyNumber = "1";
+                                  else if (activeIndex === 1) hotkeyNumber = "3";
+                                  else if (activeIndex === 2) hotkeyNumber = "4";
+                                  else if (activeIndex === 3) hotkeyNumber = "5";
+                                  else if (activeIndex === 4) hotkeyNumber = "6";
 
                                   return (
                                       <button 
@@ -339,6 +396,7 @@ const App: React.FC = () => {
                         onQuit={handleQuit} 
                         settings={settings}
                         onUpdateSettings={setSettings}
+                        onOpenSettings={() => setShowSettings(true)}
                     />
                   </div>
               )}
@@ -360,6 +418,14 @@ const App: React.FC = () => {
               </div>
           </div>
       </Modal>
+
+      <SettingsModal 
+          isOpen={showSettings} 
+          onClose={() => setShowSettings(false)} 
+          settings={settings} 
+          onUpdate={setSettings} 
+          onControlsOpenChange={setIsControlsOpen}
+      />
 
       <ShopModal 
         isOpen={showShop} 

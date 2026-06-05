@@ -4,7 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Neon Tetris</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>Neon Blocks</title>
     <script type="importmap">
     {
       "imports": {
@@ -216,6 +217,21 @@
             text-shadow: -1px 0 #05d9e8;
             clip: rect(44px, 450px, 56px, 0);
             animation: glitch 5s infinite linear alternate-reverse;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #05d9e8;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #ff2a6d;
         }
       }
     </style>

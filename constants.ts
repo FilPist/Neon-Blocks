@@ -1,5 +1,5 @@
 
-import { Tetromino, TetrominoType } from './types';
+import { Tetromino, TetrominoType, Keybindings, Settings } from './types';
 
 // Standardized Neon Blocks Palette
 const COLORS = {
@@ -14,6 +14,28 @@ const COLORS = {
 
 export const STORAGE_KEY = 'neon_blocks_highscores';
 export const PROFILE_STORAGE_KEY = 'neon_blocks_profile';
+export const SETTINGS_STORAGE_KEY = 'neon_blocks_settings';
+
+export const DEFAULT_KEYBINDINGS: Keybindings = {
+  moveLeft: 'a',
+  moveRight: 'd',
+  softDrop: 's',
+  hardDrop: ' ',
+  rotateCW: 'e',
+  rotateCCW: 'q',
+  rotate180: 'w',
+  holdPiece: 'Shift',
+  pause: 'Escape'
+};
+
+export const DEFAULT_SETTINGS: Settings = {
+  soundVolume: 50,
+  language: 'en',
+  controlsMode: 'classic',
+  keybindings: DEFAULT_KEYBINDINGS,
+  sdf: 5,
+  screenShake: true,
+};
 
 export const TETROMINOES: Record<TetrominoType, Tetromino> = {
   [TetrominoType.I]: {

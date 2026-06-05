@@ -35,13 +35,25 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose, lang
                             <span className="text-p5-cyan block font-bold mb-2">{t.onboardingPauseBase}</span>
                             {t.onboardingPauseDesc}
                         </div>
+                        <div className="bg-white/5 p-4 border-l-4 border-p5-cyan">
+                            <span className="text-p5-cyan block font-bold mb-2">180° ROTATION & HOLD</span>
+                            Use 'A' (by default in custom) or 'V' to flip 180°. Use 'C' or Shift to Hold Piece.
+                        </div>
                     </div>
-                    <button 
-                        onClick={() => setStep(2)}
-                        className="mt-4 bg-white text-black font-p5-display text-3xl py-3 hover:bg-p5-cyan transition-colors"
-                    >
-                        {t.onboardingNext}
-                    </button>
+                    <div className="flex gap-4 mt-4">
+                        <button 
+                            onClick={onClose}
+                            className="bg-transparent border-2 border-white/30 text-white/50 font-p5-display text-xl px-4 py-3 hover:bg-white/10 hover:text-white transition-colors"
+                        >
+                            SKIP TUTORIAL
+                        </button>
+                        <button 
+                            onClick={() => setStep(2)}
+                            className="flex-1 bg-white text-black font-p5-display text-3xl py-3 hover:bg-p5-cyan transition-colors"
+                        >
+                            {t.onboardingNext}
+                        </button>
+                    </div>
                 </div>
             )}
             {step === 2 && (

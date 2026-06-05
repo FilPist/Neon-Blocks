@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { BoardGrid, TetrominoType, BOARD_WIDTH, BOARD_HEIGHT, Popup, HighScore } from '../types';
+import { BoardGrid, TetrominoType, BOARD_WIDTH, BOARD_HEIGHT, Popup, HighScore, Settings } from '../types';
 import { TETROMINOES, INITIAL_SPEED, SPEED_DECREMENT, MIN_SPEED, STORAGE_KEY } from '../constants';
 import { playSound } from '../lib/sound';
+import { getKickOffsets } from '../utils/srs';
 
 const createEmptyGrid = (): BoardGrid =>
   Array.from({ length: BOARD_HEIGHT }, () =>
@@ -15,7 +16,7 @@ const getRandomTetromino = () => {
   return TETROMINOES[type];
 };
 
-export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) => void) => {
+export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) => void, settings?: Settings) => {
   const volumeRef = useRef(volume);
   const onCoinsEarnedRef = useRef(onCoinsEarned);
   useEffect(() => {
@@ -37,6 +38,7 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     x: number;
     y: number;
     color: string;
+    rotation: number;
   } | null>(null);
   
   const [isShaking, setIsShaking] = useState(false);
@@ -52,7 +54,7 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
 
   const stateRef = useRef({
     grid: createEmptyGrid(),
-    piece: null as { type: TetrominoType; shape: number[][]; x: number; y: number; color: string } | null,
+    piece: null as { type: TetrominoType; shape: number[][]; x: number; y: number; color: string; rotation: number } | null,
     nextPieceType: getRandomTetromino().type,
     score: 0,
     lines: 0,
@@ -85,7 +87,13 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
   const lastTimeRef = useRef<number>(0);
   const dropCounterRef = useRef<number>(0);
 
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+      settingsRef.current = settings;
+  }, [settings]);
+
   const triggerShake = useCallback(() => {
+      if (settingsRef.current?.screenShake === false) return;
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 300);
   }, []);
@@ -160,6 +168,7 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
         x: initialX,
         y: 0,
         color: newPieceTemplate.color,
+        rotation: 0,
     };
 
     currentState.piece = newPiece;
@@ -289,6 +298,7 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
             x: initialX,
             y: 0,
             color: newTemplate.color,
+            rotation: 0,
         };
         setPiece({...s.piece});
     }
@@ -314,45 +324,58 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     return false;
   }, [lockPiece]);
 
-  const rotate = useCallback((direction: 1 | -1 = 1) => {
+  const rotate = useCallback((direction: 1 | -1 | 2 = 1) => {
     const s = stateRef.current;
     if (!s.piece || s.gameOver || s.isPaused || !s.isPlaying) return;
 
+    if (s.piece.type === TetrominoType.O) return;
+
     const shape = s.piece.shape;
-    const rows = shape.length;
-    const cols = shape[0].length;
-    let rotatedShape: number[][] = Array.from({length: cols}, () => Array(rows).fill(0));
+    let rotatedShape = shape;
 
-    if (direction === 1) {
+    const numRotations = direction === 1 ? 1 : direction === -1 ? 3 : 2;
+    for (let count = 0; count < numRotations; count++) {
+        const rows = rotatedShape.length;
+        const cols = rotatedShape[0].length;
+        const nextRotatedShape: number[][] = Array.from({length: cols}, () => Array(rows).fill(0));
         for(let r = 0; r < rows; r++) {
             for(let c = 0; c < cols; c++) {
-                rotatedShape[c][rows - 1 - r] = shape[r][c];
+                nextRotatedShape[c][rows - 1 - r] = rotatedShape[r][c];
             }
         }
-    } else {
-        for(let r = 0; r < rows; r++) {
-            for(let c = 0; c < cols; c++) {
-                rotatedShape[cols - 1 - c][r] = shape[r][c];
-            }
-        }
+        rotatedShape = nextRotatedShape;
     }
 
-    let offset = 0;
-    if (checkCollision(rotatedShape, s.piece.x, s.piece.y, s.grid)) {
-      offset = s.piece.x > BOARD_WIDTH / 2 ? -1 : 1;
-      
-      if (checkCollision(rotatedShape, s.piece.x + offset, s.piece.y, s.grid)) {
-         offset = -offset;
-         if (checkCollision(rotatedShape, s.piece.x + offset, s.piece.y, s.grid)) {
-            offset = offset > 0 ? 2 : -2;
-             if (checkCollision(rotatedShape, s.piece.x + offset, s.piece.y, s.grid)) {
-                 return; 
-             }
-         }
-      }
+    const currentRot = s.piece.rotation;
+    const newRot = (currentRot + (direction === -1 ? 3 : direction)) % 4;
+
+    const kickOffsets = getKickOffsets(s.piece.type, currentRot, newRot);
+
+    let appliedKick = null;
+    for (const [xOffset, yOffset] of kickOffsets) {
+       // Kicks are typically defined as standard (x, y) where +y is up in some systems, 
+       // but Tetris Guideline SRS kick tables usually use +y as UP. 
+       // Our board uses +y as DOWN, so we invert the y offset.
+       const newX = s.piece.x + xOffset;
+       const newY = s.piece.y - yOffset; // invert Y for SRS kicks!
+       
+       if (!checkCollision(rotatedShape, newX, newY, s.grid)) {
+          appliedKick = [xOffset, -yOffset];
+          break;
+       }
     }
 
-    s.piece = { ...s.piece, shape: rotatedShape, x: s.piece.x + offset };
+    if (appliedKick === null) {
+       return; // Rotation failed, no kicks worked
+    }
+
+    s.piece = { 
+        ...s.piece, 
+        shape: rotatedShape, 
+        x: s.piece.x + appliedKick[0], 
+        y: s.piece.y + appliedKick[1],
+        rotation: newRot
+    };
     setPiece({...s.piece}); 
     playSound('rotate', volumeRef.current);
   }, []);
@@ -412,7 +435,11 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
         s.playTime += deltaTime;
         
         // Calculate speed
-        const currentSpeed = Math.max(MIN_SPEED, INITIAL_SPEED - (s.level - 1) * SPEED_DECREMENT);
+        let currentSpeed = Math.max(MIN_SPEED, INITIAL_SPEED - (s.level - 1) * SPEED_DECREMENT);
+        if (isSoftDroppingRef.current) {
+            const factor = settings?.sdf || 5;
+            currentSpeed = currentSpeed / factor;
+        }
         
         if (dropCounterRef.current > currentSpeed) {
           drop(); 
@@ -486,11 +513,14 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
   }, [spawnPiece]);
 
   const quitGame = useCallback(() => {
+      saveHighScore(stateRef.current.score);
       stateRef.current.isPlaying = false;
       stateRef.current.isPaused = false;
       setIsPlaying(false);
       setIsPaused(false);
-  }, []);
+  }, [saveHighScore]);
+
+  const isSoftDroppingRef = useRef(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -500,21 +530,60 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
           e.preventDefault();
       }
 
-      switch (e.key) {
-        case 'ArrowLeft': case 'a': case 'A': move(-1, 0); break;
-        case 'ArrowRight': case 'd': case 'D': move(1, 0); break;
-        case 'ArrowDown': case 's': case 'S': move(0, 1); break;
-        case 'ArrowUp': case 'w': case 'W': case 'e': case 'E': rotate(1); break;
-        case 'q': case 'Q': case 'z': case 'Z': case 'Control': rotate(-1); break;
-        case ' ': hardDrop(); break;
-        case 'p': case 'P': case 'Escape': togglePause(); break;
-        case 'c': case 'C': case 'Shift': holdPiece(); break;
+      const key = e.key;
+      const lowerKey = key.toLowerCase();
+      const isCustom = settings?.controlsMode === 'custom';
+      const bindings = settings?.keybindings;
+
+      const isSoftDropKey = isCustom && bindings ? lowerKey === bindings.softDrop.toLowerCase() : ['arrowdown', 's'].includes(lowerKey);
+      if (isSoftDropKey) {
+          isSoftDroppingRef.current = true;
+          if (!e.repeat) move(0, 1);
+          return;
+      }
+
+      if (e.repeat) return;
+
+      if (isCustom && bindings) {
+          if (lowerKey === bindings.moveLeft.toLowerCase()) move(-1, 0);
+          else if (lowerKey === bindings.moveRight.toLowerCase()) move(1, 0);
+          else if (lowerKey === bindings.rotateCW.toLowerCase()) rotate(1);
+          else if (lowerKey === bindings.rotateCCW.toLowerCase()) rotate(-1);
+          else if (lowerKey === bindings.rotate180.toLowerCase()) rotate(2);
+          else if (key === bindings.hardDrop || lowerKey === bindings.hardDrop.toLowerCase()) hardDrop();
+          else if (key === bindings.holdPiece || lowerKey === bindings.holdPiece.toLowerCase()) holdPiece();
+          else if (key === bindings.pause || lowerKey === bindings.pause.toLowerCase()) togglePause();
+      } else {
+        switch (e.key) {
+          case 'ArrowLeft': case 'a': case 'A': move(-1, 0); break;
+          case 'ArrowRight': case 'd': case 'D': move(1, 0); break;
+          case 'ArrowUp': case 'e': case 'E': rotate(1); break;
+          case 'q': case 'Q': rotate(-1); break;
+          case 'w': case 'W': rotate(2); break;
+          case ' ': hardDrop(); break;
+          case 'p': case 'P': case 'Escape': togglePause(); break;
+          case 'Shift': case '2': holdPiece(); break;
+        }
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+       const lowerKey = e.key.toLowerCase();
+       const isCustom = settings?.controlsMode === 'custom';
+       const bindings = settings?.keybindings;
+       const isSoftDropKey = isCustom && bindings ? lowerKey === bindings.softDrop.toLowerCase() : ['arrowdown', 's'].includes(lowerKey);
+       if (isSoftDropKey) {
+           isSoftDroppingRef.current = false;
+       }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [move, rotate, hardDrop, togglePause, holdPiece]);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+    }
+  }, [move, rotate, hardDrop, togglePause, holdPiece, settings]);
 
   const triggerAbility = useCallback((abilityId: string) => {
     const s = stateRef.current;

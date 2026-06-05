@@ -68,18 +68,6 @@ const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurch
                     );
                 })}
             </div>
-
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: rgba(255, 255, 255, 0.05);
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #05d9e8;
-                }
-            `}</style>
         </Modal>
     );
 };

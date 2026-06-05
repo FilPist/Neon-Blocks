@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { MenuButton, RecordsModal } from './P5UI';
-import SettingsModal from './SettingsModal';
 import { Settings, HighScore, Profile, GameMode } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -13,11 +12,13 @@ interface MainMenuProps {
     highScores: HighScore[];
     profile: Profile;
     onOpenShop: () => void;
+    onOpenSettings?: () => void;
+    isSettingsOpen?: boolean;
+    isControlsOpen?: boolean;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings, isExiting, highScores, profile, onOpenShop }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings, isExiting, highScores, profile, onOpenShop, onOpenSettings, isSettingsOpen, isControlsOpen }) => {
     const [mounted, setMounted] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
     const [showRecords, setShowRecords] = useState(false);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const t = TRANSLATIONS[settings.language] as any;
@@ -40,7 +41,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 absolute inset-0 lg:static lg:w-[45%] lg:flex-none
                 flex flex-col items-center justify-center 
                 transition-all duration-1000 z-10
-                ${mounted && !isExiting ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-40'}
+                ${mounted && !isExiting ? (
+                    isControlsOpen ? 'opacity-100 lg:-translate-x-[40vw]' : 
+                    isSettingsOpen ? 'opacity-100 lg:-translate-x-[30vw]' : 
+                    'opacity-100 translate-x-0'
+                ) : 'opacity-0 -translate-x-40'}
                 ${showPatchNotes ? 'lg:-translate-x-[40vw] opacity-0 lg:opacity-100' : ''}
             `}>
                 <div className="relative p-8 text-center flex flex-col items-center">
@@ -51,7 +56,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                     
                     <div className="mt-12 transform rotate-2">
                          <div className="bg-p5-cyan text-black px-6 py-2 tracking-[0.4em] font-black text-xl animate-pulse border-2 border-white shadow-hard-black transform -skew-x-12">
-                             PROTOCOL // OVERRIDE
+                             RUNNING PROTOCOL 1.0.7.
                          </div>
                     </div>
 
@@ -76,7 +81,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 flex flex-col justify-center items-center lg:items-start pl-0 lg:pl-32
                 z-20
                 transition-all duration-1000 delay-100
-                ${mounted && !isExiting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'}
+                ${mounted && !isExiting ? (
+                    isControlsOpen ? 'opacity-100 lg:translate-x-[45vw]' : 
+                    isSettingsOpen ? 'opacity-100 lg:translate-x-[30vw]' : 
+                    'opacity-100 translate-y-0'
+                ) : 'opacity-0 translate-y-40'}
                 ${showPatchNotes ? 'lg:-translate-x-[40vw] opacity-0 lg:opacity-100' : ''}
             `}>
                 <div className="w-full max-w-md relative z-10 p-4 lg:p-0">
@@ -92,11 +101,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                         <MenuButton label={t.start} onClick={() => onStart('classic')} primary small />
                         <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
                         <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} small />
-                        <MenuButton label={t.options} onClick={() => setShowSettings(true)} active={true} small />
+                        <MenuButton label={t.options} onClick={onOpenSettings} active={true} small />
                         <MenuButton label={t.records} onClick={() => setShowRecords(true)} active={true} small />
                         
                         <div className="mt-2 flex justify-between text-p5-cyan font-p5-ui text-[10px] tracking-[0.2em] bg-white/5 backdrop-blur-sm p-3 border-l-4 border-p5-purple">
-                            <span>REVISION // 1.0.6</span>
+                            <span>REVISION // 1.0.7</span>
                             <span>ENCRYPTED_NEURAL_LINK</span>
                         </div>
                      </div>
@@ -129,9 +138,9 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
 
             {/* Patch Notes Sliding Panel */}
             <div className={`
-                absolute top-0 right-0 bottom-12 w-full lg:w-[45vw] bg-[#050510]/95 border-l-4 border-p5-cyan
-                z-40 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]
-                flex flex-col
+                fixed top-0 right-0 h-full w-full lg:w-[45vw] bg-[#050510]/95 border-l-4 border-p5-cyan
+                z-[110] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]
+                flex flex-col shadow-[-10px_0_30px_rgba(5,217,232,0.1)]
                 ${showPatchNotes ? 'translate-x-0' : 'translate-x-full pointer-events-none'}
             `}>
                 <div className="flex justify-between items-center p-6 border-b-2 border-p5-cyan/30">
@@ -143,13 +152,27 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 <div className="flex-1 overflow-y-auto p-8 lg:p-12 text-left font-p5-ui custom-scrollbar pb-24">
                     <div className="border-l-4 border-p5-cyan bg-p5-cyan/5 p-6 mb-8 transform -skew-x-2">
                         <div className="transform skew-x-2">
-                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.6 (CURRENT)</h3>
+                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.7 (CURRENT)</h3>
+                            <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
+                                <li><span className="text-p5-purple font-bold">NEW:</span> Custom Keybindings and Controls Mode (Classic & Custom).</li>
+                                <li><span className="text-p5-yellow font-bold">NEW:</span> Super Rotation System (SRS) kicks explicitly added.</li>
+                                <li><span className="text-p5-yellow font-bold">NEW:</span> Soft Drop Factor (SDF) implemented.</li>
+                                <li><span className="text-p5-yellow font-bold">NEW:</span> Fast 180° Rotation.</li>
+                                <li><span className="text-p5-cyan font-bold">NEW:</span> Screen Shake toggle and Privacy options in Settings.</li>
+                                <li><span className="text-p5-cyan font-bold">NEW:</span> Game Exit confirmation saves score to Leaderboard.</li>
+                                <li><span className="text-white font-bold">IMPROVED:</span> Removed Volume slider from Pause menu, UI adjustments.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="border-l-4 border-p5-cyan bg-p5-cyan/5 p-6 mb-8 transform -skew-x-2">
+                        <div className="transform skew-x-2">
+                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.6</h3>
                             <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
                                 <li><span className="text-p5-yellow font-bold">NEW:</span> Added HOLD PIECE functionality (Press C / Shift).</li>
                                 <li><span className="text-p5-yellow font-bold">NEW:</span> Playtime timer added to game view.</li>
                                 <li><span className="text-p5-purple font-bold">IMPROVED:</span> Responsive design for smaller screens (13" laptops).</li>
                                 <li><span className="text-p5-purple font-bold">IMPROVED:</span> Visual effects for hard drops (Vertical lines).</li>
-                                <li><span className="text-p5-purple font-bold">IMPROVED:</span> Relocated the "ACTIVE" diagnostic text to prevent obscuring the board.</li>
                                 <li><span className="text-white font-bold">FIXED:</span> Leaderboard now saves correctly for all game modes.</li>
                             </ul>
                         </div>
@@ -177,13 +200,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 </button>
             </div>
             
-            <SettingsModal 
-                isOpen={showSettings} 
-                onClose={() => setShowSettings(false)}
-                settings={settings}
-                onUpdate={onUpdateSettings}
-            />
-
             <RecordsModal 
                 isOpen={showRecords}
                 onClose={() => setShowRecords(false)}
