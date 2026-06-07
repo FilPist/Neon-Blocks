@@ -99,7 +99,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                         </div>
 
                         <MenuButton label={t.start} onClick={() => onStart('classic')} primary small />
-                        <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
+                        { (profile.gamesPlayed || 0) >= 3 ? (
+                            <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
+                        ) : (
+                            <MenuButton label={(t.abilitiesMode || "ABILITIES MODE") + ` [LOCKED - PLAY ${3 - (profile.gamesPlayed || 0)} MORE]`} onClick={() => {}} small />
+                        )}
                         <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} small />
                         <MenuButton label={t.options} onClick={onOpenSettings} active={true} small />
                         <MenuButton label={t.records} onClick={() => setShowRecords(true)} active={true} small />

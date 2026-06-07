@@ -121,21 +121,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
             <div className={`relative z-10 p-2 sm:p-4 pointer-events-none transition-all duration-700 ease-out-expo w-full sm:w-auto h-full sm:h-auto flex items-center justify-center ${!visible ? 'scale-90 opacity-0 -translate-y-20' : 'scale-100 opacity-100 translate-y-0'} ${showControlsPopup ? 'sm:-translate-x-[15%]' : 'translate-x-0'}`}>
                 
                 {/* Main Settings Panel */}
-                <div className="relative w-full max-w-[600px] h-full max-h-[85vh] sm:h-auto shrink-0 bg-black p-4 sm:p-6 border-2 border-white/20 flex flex-col pointer-events-auto shadow-hard-black">
+                <div className="relative w-full sm:w-[600px] lg:w-[650px] max-w-full h-full max-h-[85vh] sm:h-auto shrink-0 bg-black p-6 sm:p-8 border-2 border-white/20 flex flex-col pointer-events-auto shadow-hard-black">
                     <div className="absolute -inset-2 border-4 border-p5-blue shadow-neon-blue transform -rotate-1 pointer-events-none z-0 hidden sm:block" />
                     
                     <div className="relative z-10 flex-1 flex flex-col min-h-0">
-                         <h2 className="font-p5-display text-3xl sm:text-4xl text-white mb-4 sm:mb-6 transform -rotate-2 text-glitch tracking-tighter drop-shadow-[4px_4px_0_#d300c5] shrink-0" data-text={t.settingsTitle || "SYSTEM SETTINGS"}>
+                         <h2 className="font-p5-display text-4xl sm:text-5xl text-white mb-6 sm:mb-8 transform -rotate-2 text-glitch tracking-tighter drop-shadow-[4px_4px_0_#d300c5] shrink-0" data-text={t.settingsTitle || "SYSTEM SETTINGS"}>
                             {t.settingsTitle || "SYSTEM SETTINGS"}
                          </h2>
                          
-                         <div className="w-full h-1 bg-gradient-to-r from-transparent via-p5-purple to-transparent mb-8 transform -skew-x-12 shrink-0" />
+                         <div className="w-full h-1 bg-gradient-to-r from-transparent via-p5-purple to-transparent mb-10 transform -skew-x-12 shrink-0" />
                          
-                         <div className="flex-1 overflow-y-auto px-4 custom-scrollbar space-y-8">
+                         <div className="flex-1 overflow-y-auto px-4 custom-scrollbar space-y-10">
                              {/* Sound Segmented */}
-                             <div className="flex flex-col gap-3 group">
+                             <div className="flex flex-col gap-4 group">
                                  <div className="flex justify-between items-end">
-                                    <span className="text-xl text-white font-bold group-hover:text-p5-cyan transition-colors">{t.sound || "MASTER VOLUME"}</span>
+                                    <span className="text-2xl text-white font-bold group-hover:text-p5-cyan transition-colors">{t.sound || "MASTER VOLUME"}</span>
                                     <span className="text-p5-cyan font-mono">{settings.soundVolume}%</span>
                                  </div>
                                  <div className="flex items-center gap-4">

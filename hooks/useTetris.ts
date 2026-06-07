@@ -516,8 +516,10 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
       saveHighScore(stateRef.current.score);
       stateRef.current.isPlaying = false;
       stateRef.current.isPaused = false;
+      stateRef.current.gameOver = false;
       setIsPlaying(false);
       setIsPaused(false);
+      setGameOver(false);
   }, [saveHighScore]);
 
   const isSoftDroppingRef = useRef(false);

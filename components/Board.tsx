@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { BoardGrid, TetrominoType, Popup } from '../types';
 
 interface BoardProps {
@@ -14,10 +14,21 @@ interface BoardProps {
   isShaking: boolean;
   popups: Popup[];
   hardDropTrails?: {col: number, color: string, id: number}[];
+  lines?: number;
 }
 
-const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropTrails = [] }) => {
-  
+const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropTrails = [], lines = 0 }) => {
+  const [flash, setFlash] = useState(false);
+  const prevLines = useRef(lines);
+
+  useEffect(() => {
+     if (lines > prevLines.current) {
+         setFlash(true);
+         setTimeout(() => setFlash(false), 300);
+     }
+     prevLines.current = lines;
+  }, [lines]);
+
   const { displayGrid } = useMemo(() => {
     const displayGrid = grid.map(row => row.map(cell => ({ ...cell, isGhost: false })));
     let ghostY = -1;
@@ -98,6 +109,10 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
         >
             
             <div className="absolute inset-0 z-20 pointer-events-none scanlines opacity-30" />
+            
+            {flash && (
+                <div className="absolute inset-0 z-30 pointer-events-none bg-white mix-blend-overlay animate-flash-row" />
+            )}
 
             <div className="grid grid-rows-[repeat(20,minmax(0,1fr))] h-full w-full relative z-10 p-1 gap-[1px] bg-black/40">
                 {displayGrid.map((row, y) => 

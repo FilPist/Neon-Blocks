@@ -32,7 +32,8 @@ const App: React.FC = () => {
       level: 1,
       xp: 0,
       unlockedAbilities: ['wipe'],
-      hasSeenOnboarding: false
+      hasSeenOnboarding: false,
+      gamesPlayed: 0
   });
 
   useEffect(() => {
@@ -52,10 +53,13 @@ const App: React.FC = () => {
               if (parsed.hasSeenOnboarding === undefined) {
                   parsed.hasSeenOnboarding = false;
               }
+              if (parsed.gamesPlayed === undefined) {
+                  parsed.gamesPlayed = 0;
+              }
               setProfile(parsed);
           } else {
               localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
-                  coins: 0, level: 1, xp: 0, unlockedAbilities: ['wipe'], hasSeenOnboarding: false
+                  coins: 0, level: 1, xp: 0, unlockedAbilities: ['wipe'], hasSeenOnboarding: false, gamesPlayed: 0
               }));
           }
       } catch (e) {
@@ -198,6 +202,11 @@ const App: React.FC = () => {
       setTransitionStage('in');
       setTimeout(() => {
         quitGame();
+        setProfile(p => {
+             const np = { ...p, gamesPlayed: (p.gamesPlayed || 0) + 1 };
+             localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(np));
+             return np;
+        });
         setShowGame(false);
         setTransitionStage('out');
         setTimeout(() => setTransitionStage('idle'), 600);
@@ -311,6 +320,7 @@ const App: React.FC = () => {
                     isShaking={isShaking} 
                     popups={popups} 
                     hardDropTrails={hardDropTrails}
+                    lines={lines}
                   />
               </div>
 

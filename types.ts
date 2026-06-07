@@ -45,6 +45,7 @@ export interface Profile {
   xp: number;
   unlockedAbilities: string[];
   hasSeenOnboarding?: boolean;
+  gamesPlayed?: number;
 }
 
 export type GameMode = 'classic' | 'abilities';

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TetrominoType, HighScore } from '../types';
 import { TETROMINOES } from '../constants';
 import { Trophy, Clock } from 'lucide-react';
@@ -120,13 +120,23 @@ export const NextPiece: React.FC<{ type: TetrominoType }> = ({ type }) => {
 };
 
 export const HoldPiece: React.FC<{ type: TetrominoType | null }> = ({ type }) => {
+    const [animate, setAnimate] = useState(false);
+    
+    useEffect(() => {
+        if(type) {
+            setAnimate(true);
+            const t = setTimeout(() => setAnimate(false), 300);
+            return () => clearTimeout(t);
+        }
+    }, [type]);
+
     return (
         <div className="relative w-24 h-24 xl:w-32 xl:h-32 transform -rotate-2">
             <div className="absolute -top-3 -left-2 xl:-left-4 z-30 bg-black text-p5-purple px-2 py-0.5 xl:px-3 xl:py-1 font-p5-display text-sm xl:text-lg border-2 border-p5-purple shadow-neon-purple whitespace-nowrap transform skew-x-[-12deg]">
                 HOLD_BUFFER
             </div>
             
-            <div className="absolute inset-0 bg-black/80 border-2 border-p5-purple clip-jagged shadow-neon-purple flex items-center justify-center overflow-hidden">
+            <div className={`absolute inset-0 bg-black/80 border-2 border-p5-purple clip-jagged shadow-neon-purple flex items-center justify-center overflow-hidden transition-transform duration-100 ${animate ? 'scale-110 brightness-150' : 'scale-100'}`}>
                 <div className="absolute inset-0 bg-p5-pattern opacity-10"></div>
                 {type && (
                     <div className="relative z-10 grid gap-1 transform scale-75 xl:scale-90" style={{ 
