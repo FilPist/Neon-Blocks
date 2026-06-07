@@ -118,14 +118,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
             {/* Transparent/Dimmed Backdrop */}
             <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity duration-500 ${!visible ? 'opacity-0' : 'opacity-100'}`} onClick={onClose} />
             
-            <div className={`relative z-10 p-4 pointer-events-none transition-all duration-700 ease-out-expo ${!visible ? 'scale-90 opacity-0 -translate-y-20' : 'scale-100 opacity-100 translate-y-0'} ${showControlsPopup ? '-translate-x-[15%]' : 'translate-x-0'}`}>
+            <div className={`relative z-10 p-2 sm:p-4 pointer-events-none transition-all duration-700 ease-out-expo w-full sm:w-auto h-full sm:h-auto flex items-center justify-center ${!visible ? 'scale-90 opacity-0 -translate-y-20' : 'scale-100 opacity-100 translate-y-0'} ${showControlsPopup ? 'sm:-translate-x-[15%]' : 'translate-x-0'}`}>
                 
                 {/* Main Settings Panel */}
-                <div className="relative w-[600px] shrink-0 bg-black p-6 border-2 border-white/20 flex flex-col pointer-events-auto shadow-hard-black">
-                    <div className="absolute -inset-2 border-4 border-p5-blue shadow-neon-blue transform -rotate-1 pointer-events-none z-0" />
+                <div className="relative w-full max-w-[600px] h-full max-h-[85vh] sm:h-auto shrink-0 bg-black p-4 sm:p-6 border-2 border-white/20 flex flex-col pointer-events-auto shadow-hard-black">
+                    <div className="absolute -inset-2 border-4 border-p5-blue shadow-neon-blue transform -rotate-1 pointer-events-none z-0 hidden sm:block" />
                     
-                    <div className="relative z-10 flex-1 flex flex-col">
-                         <h2 className="font-p5-display text-4xl text-white mb-6 transform -rotate-2 text-glitch tracking-tighter drop-shadow-[4px_4px_0_#d300c5] shrink-0" data-text={t.settingsTitle || "SYSTEM SETTINGS"}>
+                    <div className="relative z-10 flex-1 flex flex-col min-h-0">
+                         <h2 className="font-p5-display text-3xl sm:text-4xl text-white mb-4 sm:mb-6 transform -rotate-2 text-glitch tracking-tighter drop-shadow-[4px_4px_0_#d300c5] shrink-0" data-text={t.settingsTitle || "SYSTEM SETTINGS"}>
                             {t.settingsTitle || "SYSTEM SETTINGS"}
                          </h2>
                          
@@ -243,8 +243,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
                 </div>
 
                 {/* Controls Popup */}
-                <div className={`absolute left-full ml-4 top-4 max-h-[80vh] w-[500px] bg-black border-2 border-p5-cyan p-6 flex flex-col pointer-events-auto shadow-neon-cyan transition-all duration-500 ease-out-expo z-[-1] opacity-0 ${showControlsPopup ? 'opacity-100 translate-x-0' : '-translate-x-[150px] pointer-events-none'}`}>
-                    <div className="flex justify-between items-center mb-6 border-b-2 border-white/20 pb-2">
+                <div className={`absolute inset-0 sm:inset-auto sm:left-full sm:ml-4 sm:top-4 h-full sm:h-auto sm:max-h-[80vh] w-full sm:w-[500px] bg-black border-2 border-p5-cyan p-4 sm:p-6 flex flex-col pointer-events-auto shadow-neon-cyan transition-all duration-500 ease-out-expo z-[200] opacity-0 ${showControlsPopup ? 'opacity-100 sm:translate-x-0 scale-100' : 'sm:-translate-x-[150px] scale-90 sm:scale-100 pointer-events-none'}`}>
+                    <div className="flex justify-between items-center mb-4 sm:mb-6 border-b-2 border-white/20 pb-2 shrink-0">
                              <span className="text-xl text-p5-cyan font-bold font-p5-display">
                                  {settings.controlsMode === 'classic' ? 'BASE CONTROLS' : 'CUSTOM KEYBINDS'}
                              </span>

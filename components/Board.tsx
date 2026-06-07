@@ -88,7 +88,14 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
         <div className="absolute -inset-6 bg-gradient-to-tr from-p5-purple to-p5-blue transform rotate-1 skew-x-2 opacity-50 z-0 blur-2xl transition-opacity duration-300" style={{ opacity: isShaking ? 0.9 : 0.4 }} />
         <div className="absolute -inset-3 bg-black transform -rotate-1 z-0 border-4 border-p5-blue shadow-hard-black" />
         
-        <div className="relative z-10 bg-[#0a0a1f] w-[85vw] max-w-[450px] aspect-[10/20] h-[80vh] sm:h-[85vh] overflow-hidden shadow-hard-black border-2 border-white/20">
+        <div 
+            className="relative z-10 bg-[#0a0a1f] overflow-hidden shadow-hard-black border-2 border-white/20 mx-auto"
+            style={{ 
+                aspectRatio: '10 / 20', 
+                height: 'min(80vh, 150vw)', 
+                maxHeight: '850px' 
+            }}
+        >
             
             <div className="absolute inset-0 z-20 pointer-events-none scanlines opacity-30" />
 

@@ -48,14 +48,14 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 ) : 'opacity-0 -translate-x-40'}
                 ${showPatchNotes ? 'lg:-translate-x-[40vw] opacity-0 lg:opacity-100' : ''}
             `}>
-                <div className="relative p-8 text-center flex flex-col items-center">
-                    <div className="bg-p5-dark text-white font-p5-display text-7xl lg:text-9xl px-8 py-4 border-8 border-white shadow-neon-pink relative z-10 transform -rotate-3 animate-float-glitch">
+                <div className="relative p-4 sm:p-8 text-center flex flex-col items-center">
+                    <div className="bg-p5-dark text-white font-p5-display text-5xl sm:text-7xl lg:text-9xl px-4 py-2 sm:px-8 sm:py-4 border-4 sm:border-8 border-white shadow-neon-pink relative z-10 transform -rotate-3 animate-float-glitch">
                         NEON<span className="text-p5-red">BLOCKS</span>
-                        <div className="absolute top-2 left-2 right-2 h-[2px] bg-white/20" />
+                        <div className="absolute top-1 sm:top-2 left-1 sm:left-2 right-1 sm:right-2 h-[2px] bg-white/20" />
                     </div>
                     
-                    <div className="mt-12 transform rotate-2">
-                         <div className="bg-p5-cyan text-black px-6 py-2 tracking-[0.4em] font-black text-xl animate-pulse border-2 border-white shadow-hard-black transform -skew-x-12">
+                    <div className="mt-8 sm:mt-12 transform rotate-2">
+                         <div className="bg-p5-cyan text-black px-4 sm:px-6 py-1 sm:py-2 tracking-[0.4em] font-black text-sm sm:text-xl animate-pulse border-2 border-white shadow-hard-black transform -skew-x-12">
                              RUNNING PROTOCOL 1.0.7.
                          </div>
                     </div>
