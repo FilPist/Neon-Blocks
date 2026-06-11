@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Language, Keybindings } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Volume2, VolumeX, X } from 'lucide-react';
+import { playSound } from '../lib/sound';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -43,8 +44,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
         let t: any;
         if (isOpen) {
             setMounted(true);
+            playSound('open_menu', settings.soundVolume);
             t = setTimeout(() => setVisible(true), 50);
         } else {
+            if (mounted) playSound('close_menu', settings.soundVolume);
             setVisible(false);
             t = setTimeout(() => {
                 setMounted(false);

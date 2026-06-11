@@ -15,6 +15,7 @@ import { Settings, Profile, GameMode, HighScore } from './types';
 import { TRANSLATIONS, PROFILE_STORAGE_KEY, SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS, ABILITIES } from './constants';
 import * as Icons from 'lucide-react';
 import { Volume2, VolumeX } from 'lucide-react';
+import { playSound, startBgMusic, stopBgMusic, updateBgVolume, setBgState } from './lib/sound';
 
 const App: React.FC = () => {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
@@ -23,6 +24,7 @@ const App: React.FC = () => {
       setSettingsState(prev => {
           const updated = typeof newSettings === 'function' ? newSettings(prev) : newSettings;
           localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+          updateBgVolume(updated.soundVolume);
           return updated;
       });
   }, []);
@@ -122,6 +124,16 @@ const App: React.FC = () => {
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
 
   useEffect(() => {
+      if (!showGame) {
+          setBgState('menu');
+      } else if (isPaused) {
+          setBgState('pause');
+      } else {
+          setBgState('game');
+      }
+  }, [showGame, isPaused]);
+
+  useEffect(() => {
       if (!showGame || isPaused || gameOver) return;
       const interval = setInterval(() => {
           setCooldowns(prev => {
@@ -185,6 +197,7 @@ const App: React.FC = () => {
       setCooldowns({});
       setIsMenuExiting(true); 
       setTimeout(() => {
+          playSound('slash', settings.soundVolume);
           setTransitionStage('in'); 
           setTimeout(() => {
               setShowGame(true);
@@ -196,9 +209,10 @@ const App: React.FC = () => {
               }, 600); 
           }, 450); 
       }, 300); 
-  }, [startGame]);
+  }, [startGame, settings.soundVolume]);
 
   const handleQuit = useCallback(() => {
+      playSound('slash', settings.soundVolume);
       setTransitionStage('in');
       setTimeout(() => {
         quitGame();
@@ -211,7 +225,7 @@ const App: React.FC = () => {
         setTransitionStage('out');
         setTimeout(() => setTransitionStage('idle'), 600);
       }, 450);
-  }, [quitGame]);
+  }, [quitGame, settings.soundVolume]);
 
   const [showSettings, setShowSettings] = useState(false);
   const [isControlsOpen, setIsControlsOpen] = useState(false);
@@ -294,8 +308,13 @@ const App: React.FC = () => {
                     ${isPaused && !gameOver ? '-translate-x-[100vw] rotate-[-5deg] opacity-0' : 'translate-x-0 rotate-0 opacity-100 animate-slam-in'}
               `}>
                   <div className="relative group cursor-default transform scale-60 xl:scale-75 origin-right animate-float-glitch">
-                      <div className="bg-p5-dark text-white font-p5-display text-5xl xl:text-6xl px-4 py-2 xl:px-6 xl:py-3 border-4 border-white shadow-neon-pink relative z-10">
-                          NEON<span className="text-p5-red">BLOCKS</span>
+                      <div className="relative bg-black border-4 border-white px-6 py-4 shadow-neon-pink text-left">
+                          <h1 className="font-p5-display text-4xl xl:text-5xl text-white tracking-tighter uppercase leading-none">
+                              NEON
+                          </h1>
+                          <h1 className="font-p5-display text-4xl xl:text-5xl text-p5-red tracking-tighter uppercase mt-[-5px] leading-none">
+                              BLOCKS
+                          </h1>
                       </div>
                   </div>
                   <ScoreBoard score={score} level={level} lines={lines} speedRatio={speedRatio} highScore={bestScore} />
@@ -391,10 +410,20 @@ const App: React.FC = () => {
                   <div className="flex flex-col gap-3 xl:gap-6 w-full max-w-[240px] xl:max-w-[280px]">
                       <MenuButton label={isPaused ? t.resume : t.paused} onClick={() => setIsPaused()} active={!gameOver} primary />
                       <div className="flex gap-2.5 xl:gap-4 w-full">
-                            <button onClick={toggleMute} className="flex-1 bg-p5-dark text-white p-2 xl:p-4 border border-p5-cyan hover:bg-p5-cyan hover:text-black transition-all transform hover:rotate-3 shadow-neon-cyan flex items-center justify-center">
+                            <button 
+                                onClick={() => { playSound('click', settings.soundVolume); toggleMute(); }} 
+                                onMouseEnter={() => playSound('hover', settings.soundVolume)}
+                                className="flex-1 bg-p5-dark text-white p-2 xl:p-4 border border-p5-cyan hover:bg-p5-cyan hover:text-black transition-all transform hover:rotate-3 shadow-neon-cyan flex items-center justify-center"
+                            >
                               {settings.soundVolume > 0 ? <Volume2 className="w-5 h-5 xl:w-7 xl:h-7" /> : <VolumeX className="w-5 h-5 xl:w-7 xl:h-7" />}
                             </button>
-                            <button onClick={handleQuit} className="flex-1 bg-p5-dark text-p5-red p-2 xl:p-4 border border-p5-red hover:bg-p5-red hover:text-white transition-all transform hover:-rotate-3 shadow-neon-pink font-bold flex items-center justify-center uppercase tracking-widest text-sm xl:text-base">{t.quit}</button>
+                            <button 
+                                onClick={() => { playSound('click', settings.soundVolume); handleQuit(); }} 
+                                onMouseEnter={() => playSound('hover', settings.soundVolume)}
+                                className="flex-1 bg-p5-dark text-p5-red p-2 xl:p-4 border border-p5-red hover:bg-p5-red hover:text-white transition-all transform hover:-rotate-3 shadow-neon-pink font-bold flex items-center justify-center uppercase tracking-widest text-sm xl:text-base"
+                            >
+                                {t.quit}
+                            </button>
                       </div>
                   </div>
               </div>
@@ -422,7 +451,14 @@ const App: React.FC = () => {
               <div className="w-full h-px bg-white/30" />
               <div className="flex flex-col w-full gap-4">
                   <MenuButton label={t.retry} onClick={() => handleStart(gameMode)} primary />
-                  <button onClick={handleQuit} className="text-white/70 hover:text-white underline underline-offset-4 decoration-p5-red decoration-2 uppercase tracking-widest font-bold">
+                  <button 
+                      onClick={() => {
+                          playSound('click', settings.soundVolume);
+                          handleQuit();
+                      }}
+                      onMouseEnter={() => playSound('hover', settings.soundVolume)}
+                      className="text-white/70 hover:text-white underline underline-offset-4 decoration-p5-red decoration-2 uppercase tracking-widest font-bold"
+                  >
                       {t.back}
                   </button>
               </div>

@@ -49,14 +49,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 ${showPatchNotes ? 'lg:-translate-x-[40vw] opacity-0 lg:opacity-100' : ''}
             `}>
                 <div className="relative p-4 sm:p-8 text-center flex flex-col items-center">
-                    <div className="bg-p5-dark text-white font-p5-display text-5xl sm:text-7xl lg:text-9xl px-4 py-2 sm:px-8 sm:py-4 border-4 sm:border-8 border-white shadow-neon-pink relative z-10 transform -rotate-3 animate-float-glitch">
-                        NEON<span className="text-p5-red">BLOCKS</span>
-                        <div className="absolute top-1 sm:top-2 left-1 sm:left-2 right-1 sm:right-2 h-[2px] bg-white/20" />
+                    <div className="relative bg-black border-4 border-white px-10 py-6 shadow-neon-pink transform -rotate-2 animate-float-glitch">
+                        <h1 className="font-p5-display text-5xl md:text-8xl text-white tracking-tighter uppercase leading-none text-left">
+                            NEON
+                        </h1>
+                        <h1 className="font-p5-display text-5xl md:text-8xl text-p5-red tracking-tighter uppercase mt-[-10px] leading-none text-left">
+                            BLOCKS
+                        </h1>
                     </div>
                     
                     <div className="mt-8 sm:mt-12 transform rotate-2">
                          <div className="bg-p5-cyan text-black px-4 sm:px-6 py-1 sm:py-2 tracking-[0.4em] font-black text-sm sm:text-xl animate-pulse border-2 border-white shadow-hard-black transform -skew-x-12">
-                             RUNNING PROTOCOL 1.0.7.
+                             RUNNING PROTOCOL 1.0.8.
                          </div>
                     </div>
 
@@ -100,16 +104,26 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
 
                         <MenuButton label={t.start} onClick={() => onStart('classic')} primary small />
                         { (profile.gamesPlayed || 0) >= 3 ? (
-                            <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
+                            <div className="relative group w-full">
+                                <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
+                                <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-2 rotate-12 bg-p5-red text-white text-[10px] font-bold px-2 py-0.5 shadow-neon-pink z-20 animate-pulse pointer-events-none">
+                                    WIP / BETA
+                                </div>
+                            </div>
                         ) : (
-                            <MenuButton label={(t.abilitiesMode || "ABILITIES MODE") + ` [LOCKED - PLAY ${3 - (profile.gamesPlayed || 0)} MORE]`} onClick={() => {}} small />
+                            <MenuButton label={(t.abilitiesMode || "ABILITIES MODE") + ` [LOCKED - PLAY ${3 - (profile.gamesPlayed || 0)} MORE]`} onClick={() => {}} small active={false} />
                         )}
-                        <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} small />
+                        <div className="relative group w-full">
+                            <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} small />
+                            <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-2 rotate-12 bg-p5-purple text-white text-[10px] font-bold px-2 py-0.5 shadow-neon-pink z-20 animate-pulse pointer-events-none">
+                                WIP / BETA
+                            </div>
+                        </div>
                         <MenuButton label={t.options} onClick={onOpenSettings} active={true} small />
                         <MenuButton label={t.records} onClick={() => setShowRecords(true)} active={true} small />
                         
                         <div className="mt-2 flex justify-between text-p5-cyan font-p5-ui text-[10px] tracking-[0.2em] bg-white/5 backdrop-blur-sm p-3 border-l-4 border-p5-purple">
-                            <span>REVISION // 1.0.7</span>
+                            <span>REVISION // 1.0.8</span>
                             <span>ENCRYPTED_NEURAL_LINK</span>
                         </div>
                      </div>
@@ -156,15 +170,29 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 <div className="flex-1 overflow-y-auto p-8 lg:p-12 text-left font-p5-ui custom-scrollbar pb-24">
                     <div className="border-l-4 border-p5-cyan bg-p5-cyan/5 p-6 mb-8 transform -skew-x-2">
                         <div className="transform skew-x-2">
-                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.7 (CURRENT)</h3>
+                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.8 (CURRENT)</h3>
                             <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
-                                <li><span className="text-p5-purple font-bold">NEW:</span> Custom Keybindings and Controls Mode (Classic & Custom).</li>
-                                <li><span className="text-p5-yellow font-bold">NEW:</span> Super Rotation System (SRS) kicks explicitly added.</li>
-                                <li><span className="text-p5-yellow font-bold">NEW:</span> Soft Drop Factor (SDF) implemented.</li>
-                                <li><span className="text-p5-yellow font-bold">NEW:</span> Fast 180° Rotation.</li>
-                                <li><span className="text-p5-cyan font-bold">NEW:</span> Screen Shake toggle and Privacy options in Settings.</li>
-                                <li><span className="text-p5-cyan font-bold">NEW:</span> Game Exit confirmation saves score to Leaderboard.</li>
-                                <li><span className="text-white font-bold">IMPROVED:</span> Removed Volume slider from Pause menu, UI adjustments.</li>
+                                <li><span className="text-p5-purple font-bold">NEW:</span> Dynamic Background Music (Chill Menu / Upbeat Game).</li>
+                                <li><span className="text-p5-purple font-bold">NEW:</span> Muffled background music in pause menu.</li>
+                                <li><span className="text-p5-yellow font-bold">IMPROVED:</span> Hover and click sounds added to main buttons and modals.</li>
+                                <li><span className="text-p5-yellow font-bold">IMPROVED:</span> Updated Leaderboard UI to be clearer and centered.</li>
+                                <li><span className="text-p5-cyan font-bold">IMPROVED:</span> Main title logo size fixed for start menu and gameplay layout.</li>
+                                <li><span className="text-white font-bold">FIXED:</span> Game Over "Return" button behavior now correctly exits the game.</li>
+                                <li><span className="text-white font-bold">UPDATE:</span> Added WIP disclaimer to Abilities Mode.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="border-l-4 border-p5-purple bg-p5-purple/5 p-6 mb-8 transform -skew-x-2 opacity-70 hover:opacity-100 transition-opacity">
+                        <div className="transform skew-x-2">
+                            <h3 className="text-xl font-p5-display text-p5-purple mb-3 tracking-widest outline-text">VERSION 1.0.7</h3>
+                            <ul className="list-disc list-inside space-y-2 text-white/70 text-sm">
+                                <li>Custom Keybindings and Controls Mode (Classic & Custom).</li>
+                                <li>Super Rotation System (SRS) kicks explicitly added.</li>
+                                <li>Soft Drop Factor (SDF) implemented.</li>
+                                <li>Fast 180° Rotation.</li>
+                                <li>Screen Shake toggle and Privacy options in Settings.</li>
+                                <li>Game Exit confirmation saves score to Leaderboard.</li>
                             </ul>
                         </div>
                     </div>

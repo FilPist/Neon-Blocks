@@ -163,10 +163,32 @@ export const HoldPiece: React.FC<{ type: TetrominoType | null }> = ({ type }) =>
     );
 };
 
+import { playSound } from '../lib/sound';
+
 export const MenuButton: React.FC<{ onClick: () => void; label: string; active?: boolean; primary?: boolean; small?: boolean }> = ({ onClick, label, active = true, primary = false, small = false }) => {
+    // Read from localStorage to avoid prop drilling for volume, or just pass a default 50. Since settings might not be available here directly, let's read from localStorage or use a default.
+    // However, it's a UI component, so maybe it's better to read settings from localStorage inside playSound.
+    // Actually, I can just use a fixed 50 here, or read it. Let's read from local storage if possible.
+    const getVol = () => {
+        try {
+            const val = localStorage.getItem('neon_blocks_settings');
+            if (val) {
+                const s = JSON.parse(val);
+                return s.soundVolume ?? 50;
+            }
+        } catch(e) {}
+        return 50;
+    };
+
     return (
         <button 
-            onClick={onClick}
+            onClick={() => {
+                playSound('click', getVol());
+                onClick();
+            }}
+            onMouseEnter={() => {
+                if (active) playSound('hover', getVol());
+            }}
             disabled={!active}
             className={`
                 relative group w-full ${small ? 'py-2 xl:py-3 px-4 xl:px-6' : 'py-3 xl:py-5 px-4 xl:px-8'} 
@@ -198,43 +220,88 @@ export const RecordsModal: React.FC<{ isOpen: boolean; onClose: () => void; scor
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center scanlines font-p5-ui">
-             <div className="absolute inset-0 bg-black/90 backdrop-blur-xl animate-fade-in" onClick={onClose} />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center font-p5-ui p-4">
+             <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-fade-in" onClick={onClose} />
+             <div className="absolute inset-0 pointer-events-none scanlines opacity-30 mix-blend-overlay" />
              
-             <div className="relative z-10 animate-slam-in max-w-lg w-full p-4">
-                 <div className="absolute -inset-1 bg-gradient-to-r from-p5-yellow to-p5-red clip-jagged shadow-neon-pink transform -rotate-1" />
-                 
-                 <div className="relative bg-black p-10 clip-jagged border-2 border-white/20">
-                      <h2 className="font-p5-display text-6xl text-center text-white mb-8 text-glitch tracking-tighter" data-text={title}>
-                          {title}
-                      </h2>
+             <div className="relative z-10 animate-slam-in max-w-2xl w-full">
+                 <div className="absolute -inset-2 bg-gradient-to-r from-p5-teal via-p5-cyan to-p5-purple shadow-neon-cyan transform -rotate-1 pointer-events-none opacity-50 blur-sm" />
+                 <div className="relative bg-[#050510] border-4 border-p5-cyan p-6 sm:p-10 shadow-hard-black flex flex-col">
+                      <div className="flex justify-between items-start mb-8 border-b-4 border-p5-cyan/30 pb-4">
+                          <h2 className="font-p5-display text-4xl sm:text-6xl text-white transform -rotate-2 text-glitch tracking-tighter drop-shadow-[4px_4px_0_#05d9e8]" data-text={title}>
+                              {title}
+                          </h2>
+                          <div className="text-right text-p5-cyan font-mono text-xs tracking-widest uppercase opacity-70">
+                              <span className="block">Global</span>
+                              <span className="block animate-pulse text-white">Records</span>
+                          </div>
+                      </div>
 
-                      <div className="flex flex-col gap-4 mb-8">
+                      <div className="flex flex-col gap-3 mb-8 max-h-[50vh] overflow-y-auto custom-scrollbar pr-2">
                           {scores.length === 0 ? (
-                              <div className="text-center text-white/50 py-8 tracking-widest">NO DATA ARCHIVED</div>
+                              <div className="text-center text-white/50 py-12 tracking-widest bg-white/5 border-2 border-dashed border-white/20">
+                                  [ NO DATA ARCHIVED ]
+                              </div>
                           ) : (
                               scores.map((s, i) => (
-                                  <div key={i} className="flex items-center justify-between bg-white/5 p-4 border-l-4 border-p5-cyan hover:bg-white/10 transition-colors group">
-                                      <div className="flex items-center gap-4">
-                                          <div className={`w-8 h-8 flex items-center justify-center font-bold text-xl ${i === 0 ? 'text-p5-yellow' : 'text-white/50'}`}>
-                                              {i === 0 ? <Trophy size={20} /> : `#${i + 1}`}
+                                  <div key={i} className={`flex items-center justify-between p-4 border-l-4 sm:border-l-8 transition-all duration-300 group ${
+                                      i === 0 ? 'bg-p5-yellow/10 border-p5-yellow shadow-[inset_0_0_20px_rgba(252,238,10,0.1)]' : 
+                                      i === 1 ? 'bg-p5-purple/10 border-p5-purple' : 
+                                      i === 2 ? 'bg-p5-red/10 border-p5-red' : 
+                                      'bg-white/5 border-white/20 hover:bg-white/10 hover:border-p5-cyan'
+                                  }`}>
+                                      <div className="flex items-center gap-4 sm:gap-6">
+                                          <div className={`w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center font-p5-display text-2xl sm:text-4xl transform -skew-x-12 bg-black border-2 ${
+                                              i === 0 ? 'text-p5-yellow border-p5-yellow shadow-[4px_4px_0_#fcee0a]' : 
+                                              i === 1 ? 'text-p5-purple border-p5-purple shadow-[4px_4px_0_#d300c5]' : 
+                                              i === 2 ? 'text-p5-red border-p5-red shadow-[3px_3px_0_#ff2a6d]' : 
+                                              'text-white/50 border-white/20'
+                                          }`}>
+                                              {i === 0 ? <Trophy className="w-5 h-5 sm:w-8 sm:h-8" /> : i + 1}
                                           </div>
                                           <div className="flex flex-col">
-                                              <span className="text-2xl font-p5-display text-white group-hover:text-p5-cyan transition-colors">{s.score.toLocaleString()}</span>
+                                              <span className={`text-3xl sm:text-5xl font-p5-display tracking-tighter transition-colors ${
+                                                  i === 0 ? 'text-p5-yellow group-hover:text-white' : 
+                                                  i === 1 ? 'text-p5-purple group-hover:text-white' : 
+                                                  i === 2 ? 'text-p5-red group-hover:text-white' : 
+                                                  'text-white group-hover:text-p5-cyan'
+                                              }`}>
+                                                  {s.score.toLocaleString()}
+                                              </span>
                                           </div>
                                       </div>
-                                      <div className="text-right flex flex-col items-end opacity-50 text-xs">
-                                          <span className="flex items-center gap-1"><Clock size={10} /> {new Date(s.date).toLocaleDateString()}</span>
-                                          <span>{new Date(s.date).toLocaleTimeString()}</span>
+                                      <div className="text-right flex flex-col items-end opacity-60 text-[10px] sm:text-xs font-mono tracking-wider">
+                                          <span className="flex items-center gap-1.5 text-p5-cyan"><Clock size={12} /> {new Date(s.date).toLocaleDateString()}</span>
+                                          <span className="text-white/70">{new Date(s.date).toLocaleTimeString()}</span>
                                       </div>
                                   </div>
                               ))
                           )}
                       </div>
 
-                      <div className="flex justify-center">
-                          <button onClick={onClose} className="text-white hover:text-p5-red underline tracking-widest uppercase font-bold text-xl">
-                              CLOSE ARCHIVE
+                      <div className="flex justify-center mt-4">
+                          <button 
+                              onClick={() => {
+                                  try {
+                                      const val = localStorage.getItem('neon_blocks_settings');
+                                      let vol = 50;
+                                      if (val) vol = JSON.parse(val).soundVolume ?? 50;
+                                      playSound('click', vol);
+                                  } catch(e) {}
+                                  onClose();
+                              }} 
+                              onMouseEnter={() => {
+                                  try {
+                                      const val = localStorage.getItem('neon_blocks_settings');
+                                      let vol = 50;
+                                      if (val) vol = JSON.parse(val).soundVolume ?? 50;
+                                      playSound('hover', vol);
+                                  } catch(e) {}
+                              }}
+                              className="group relative bg-[#050510] text-p5-red border-2 border-p5-red px-8 py-3 font-p5-display text-2xl hover:bg-p5-red hover:text-white transition-all duration-300 transform -skew-x-12 shadow-neon-pink flex items-center justify-center overflow-hidden"
+                          >
+                              <span className="relative z-10 transform skew-x-12 tracking-widest">CLOSE_ARCHIVE</span>
+                              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                           </button>
                       </div>
                  </div>
