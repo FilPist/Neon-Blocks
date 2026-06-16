@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     return {
-      base: './Neon-Blocks/', // Allows deployment to any subpath like GitHub Pages
+      base: process.env.VITE_BASE_PATH || './', // Supports dynamic base paths (like GitHub Pages) or fallback to portable relative paths for Vercel
       server: {
         port: 3000,
         host: '0.0.0.0',
