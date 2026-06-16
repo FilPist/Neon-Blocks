@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+@theme {
+  --color-p5-red: #ff2a6d;     
+  --color-p5-dark: #050510;    
+  --color-p5-gray: #1a1a2e;    
+  --color-p5-white: #e0e0e0;   
+  --color-p5-yellow: #fcee0a; 
+  --color-p5-cyan: #05d9e8;    
+  --color-p5-purple: #d300c5;  
+  --color-p5-blue: #304ffe;     
+
+  --font-p5-display: "Anton", sans-serif;
+  --font-p5-ui: "Rajdhani", sans-serif;
+
+  --shadow-hard-black: 8px 8px 0px 0px rgba(5, 5, 16, 1);
+  --shadow-hard-white: 6px 6px 0px 0px rgba(224, 224, 224, 1);
+  --shadow-neon-pink: 0 0 10px rgba(255, 42, 109, 0.6), 0 0 20px rgba(255, 42, 109, 0.4);
+  --shadow-neon-cyan: 0 0 10px rgba(5, 217, 232, 0.6), 0 0 20px rgba(5, 217, 232, 0.4);
+  --shadow-neon-purple: 0 0 10px rgba(211, 0, 197, 0.6), 0 0 20px rgba(211, 0, 197, 0.4);
+  --shadow-neon-blue: 0 0 10px rgba(48, 79, 254, 0.6), 0 0 20px rgba(48, 79, 254, 0.4);
+
+  --animate-shake: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+  --animate-slam-in: slamIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  --animate-glitch: glitch 1s linear infinite;
+  --animate-wipe-in: wipeIn 0.6s cubic-bezier(0.7, 0, 0.3, 1) both;
+  --animate-wipe-out: wipeOut 0.6s cubic-bezier(0.7, 0, 0.3, 1) both;
+  --animate-letter-reveal: letterReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slash-expand: slashExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slash-collapse: slashCollapse 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-popup: popup 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-flash-row: flashRow 0.3s ease-out forwards;
+  --animate-float-glitch: floatGlitch 4s ease-in-out infinite;
+  --animate-ticker: ticker 30s linear infinite;
+  --animate-card-float: cardFloat 6s ease-in-out infinite;
+  --animate-fade-in: fadeIn 0.3s ease-out forwards;
+  --animate-slide-in-right: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-zoom-in: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-out: fadeOut 0.3s ease-out forwards;
+
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+  }
+  @keyframes slamIn {
+    0% { transform: scale(1.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes glitch {
+    2%, 64% { transform: translate(2px,0) skew(0deg); }
+    4%, 60% { transform: translate(-2px,0) skew(0deg); }
+    62% { transform: translate(0,0) skew(5deg); }
+  }
+  @keyframes letterReveal {
+    0% { transform: translateY(100%) scale(0.5); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes slashExpand {
+    0% { transform: skewX(-20deg) scaleY(0); }
+    100% { transform: skewX(-20deg) scaleY(1); }
+  }
+  @keyframes slashCollapse {
+    0% { transform: skewX(-20deg) scaleY(1); }
+    100% { transform: skewX(-20deg) scaleY(0); }
+  }
+  @keyframes popup {
+    0% { transform: translate(-50%, -50%) scale(0.2) rotate(-15deg); opacity: 0; }
+    20% { transform: translate(-50%, -100%) scale(1.5) rotate(5deg); opacity: 1; }
+    40% { transform: translate(-50%, -120%) scale(1.2) rotate(-5deg); opacity: 1; }
+    100% { transform: translate(-50%, -200%) scale(1) rotate(0deg); opacity: 0; }
+  }
+  @keyframes flashRow {
+    0% { background-color: #fff; box-shadow: 0 0 30px #fff, inset 0 0 20px #fff; z-index: 50; }
+    100% { background-color: transparent; box-shadow: none; z-index: 0; }
+  }
+  @keyframes floatGlitch {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.05); }
+    90% { transform: translateY(2px) skewX(2deg); }
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes cardFloat {
+    0%, 100% { transform: translateY(0) rotate(12deg); }
+    50% { transform: translateY(-20px) rotate(15deg); }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes slideInRight {
+    0% { transform: translateX(50px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes zoomIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
+
+@utility clip-jagged {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 85%,
+    95% 100%,
+    5% 100%,
+    0 85%
+  );
+}
+
+@utility scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.2)
+  );
+  background-size: 100% 4px;
+}
+
+@utility bg-p5-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+@utility text-outline {
+  text-shadow: 
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+}
+
+@utility text-stroke-white {
+    -webkit-text-stroke: 2px white;
+}
+
+@utility text-glitch {
+   position: relative;
+   &::before, &::after {
+       content: attr(data-text);
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+   }
+   &::before {
+       left: 2px;
+       text-shadow: -1px 0 #ff2a6d;
+       clip: rect(44px, 450px, 56px, 0);
+       animation: glitch 5s infinite linear alternate-reverse;
+   }
+   &::after {
+       left: -2px;
+       text-shadow: -1px 0 #05d9e8;
+       clip: rect(44px, 450px, 56px, 0);
+       animation: glitch 5s infinite linear alternate-reverse;
+   }
+}
+
+@utility custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #05d9e8;
+        border-radius: 4px;
+        &:hover {
+            background: #ff2a6d;
+        }
+    }
+}
+
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
