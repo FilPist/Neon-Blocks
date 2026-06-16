@@ -59,15 +59,25 @@ function nextNote() {
 
 function initAudioNodes() {
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        masterFilter = audioCtx.createBiquadFilter();
-        masterGain = audioCtx.createGain();
-        
-        // Setup master chain
-        masterFilter.type = 'lowpass';
-        masterFilter.frequency.value = 20000; // Open by default
-        masterFilter.connect(masterGain);
-        masterGain.connect(audioCtx.destination);
+        try {
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            if (AudioContextClass) {
+                audioCtx = new AudioContextClass();
+                masterFilter = audioCtx.createBiquadFilter();
+                masterGain = audioCtx.createGain();
+                
+                // Setup master chain
+                masterFilter.type = 'lowpass';
+                masterFilter.frequency.value = 20000; // Open by default
+                masterFilter.connect(masterGain);
+                masterGain.connect(audioCtx.destination);
+            }
+        } catch (e) {
+            console.warn("Web Audio API is not supported or was blocked by the browser's autoplay policies.", e);
+            audioCtx = null;
+            masterFilter = null;
+            masterGain = null;
+        }
     }
 }
 
@@ -98,7 +108,8 @@ function playNote(time: number, freq: number, isBass: boolean = false) {
 }
 
 function scheduler() {
-    while (nextNoteTime < audioCtx!.currentTime + 0.1) {
+    if (!audioCtx) return;
+    while (nextNoteTime < audioCtx.currentTime + 0.1) {
         if (currentState === 'game' || currentState === 'pause') {
             // Play upbeat track
             if (current16thNote % 4 === 0 && audioCtx && bgVolume > 0 && masterFilter) {
@@ -152,11 +163,12 @@ export const startBgMusic = (volume: number) => {
     bgVolume = volume;
     if (isBgMusicPlaying || volume <= 0) return;
     initAudioNodes();
-    if (audioCtx?.state === 'suspended') {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
     isBgMusicPlaying = true;
-    nextNoteTime = audioCtx!.currentTime + 0.05;
+    nextNoteTime = audioCtx.currentTime + 0.05;
     scheduler();
 };
 
@@ -180,13 +192,14 @@ export const playSound = (type: SoundType, volume: number = 50) => {
     if (volume <= 0) return;
     
     initAudioNodes();
+    if (!audioCtx) return;
     
-    if (audioCtx?.state === 'suspended') {
+    if (audioCtx.state === 'suspended') {
         audioCtx.resume();
         if (!isBgMusicPlaying && volume > 0) startBgMusic(volume);
     }
 
-    const now = audioCtx!.currentTime;
+    const now = audioCtx.currentTime;
     const masterVol = (volume / 100) * 0.3;
 
     const playOsc = (

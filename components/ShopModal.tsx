@@ -23,6 +23,15 @@ const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurch
 
     return (
         <Modal title={t.shop} isOpen={isOpen} onClose={onClose} maxWidth="max-w-4xl">
+            <div className="border-l-4 border-p5-yellow bg-p5-yellow/10 p-3 mb-4 text-p5-yellow font-p5-ui text-xs tracking-wider uppercase flex items-center gap-2">
+                <Icons.AlertTriangle size={14} className="animate-pulse" />
+                <span>
+                    {language === 'it' 
+                        ? 'NEGOZIO IN BETA / WORK IN PROGRESS - NUOVI POTENZIAMENTI IN ARRIVO' 
+                        : 'SHOP BETA / WORK IN PROGRESS - MORE UPGRADES IN DEVELOPMENT'}
+                </span>
+            </div>
+
             <div className="flex justify-between items-center bg-black border-2 border-p5-cyan p-4 mb-6 shadow-[4px_4px_0_#05d9e8] transform -skew-x-12">
                 <span className="text-white text-xl font-p5-display">COINS</span>
                 <span className="text-p5-cyan text-3xl font-p5-ui font-bold animate-pulse">{profile.coins}</span>
