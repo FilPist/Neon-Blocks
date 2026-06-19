@@ -88,33 +88,39 @@ export const ScoreBoard: React.FC<{ score: number; level: number; lines: number;
     );
 };
 
-export const NextPiece: React.FC<{ type: TetrominoType }> = ({ type }) => {
-    const piece = TETROMINOES[type];
+export const NextPiece: React.FC<{ types: TetrominoType[], clairvoyant?: boolean }> = ({ types, clairvoyant }) => {
+    const piecesToShow = clairvoyant ? types.slice(0, 3) : types.slice(0, 1);
     
     return (
-        <div className="relative w-32 h-32 xl:w-48 xl:h-48 transform rotate-2">
+        <div className="relative transform rotate-2 flex flex-col gap-4">
             <div className="absolute -top-4 -right-2 xl:-right-4 z-30 bg-black text-p5-cyan px-3 py-0.5 xl:px-4 xl:py-1 font-p5-display text-base xl:text-xl border-2 border-p5-cyan shadow-neon-cyan whitespace-nowrap transform skew-x-12">
                 BUFFER_LOAD
             </div>
             
-            <div className="absolute inset-0 bg-black/80 border-4 border-p5-blue clip-jagged shadow-neon-blue flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-p5-pattern opacity-10"></div>
-                <div className="relative z-10 grid gap-1 transform scale-100 xl:scale-125" style={{ 
-                     gridTemplateColumns: `repeat(${piece.shape[0].length}, 1fr)`,
-                 }}>
-                    {piece.shape.map((row, y) => 
-                        row.map((cell, x) => (
-                            <div key={`${x}-${y}`} className={`w-4 h-4 xl:w-6 xl:h-6 ${cell ? '' : 'transparent'}`} 
-                                 style={{ 
-                                     backgroundColor: cell ? piece.color : 'transparent',
-                                     border: cell ? '2px solid rgba(255,255,255,0.8)' : 'none',
-                                     boxShadow: cell ? `0 0 15px ${piece.color}` : 'none'
-                                 }}>
-                            </div>
-                        ))
-                    )}
-                 </div>
-            </div>
+            {piecesToShow.map((type, index) => {
+                const piece = TETROMINOES[type];
+                const isFirst = index === 0;
+                return (
+                    <div key={index} className={`relative bg-black/80 border-4 border-p5-blue clip-jagged shadow-neon-blue flex items-center justify-center overflow-hidden transition-all duration-300 ${isFirst ? 'w-32 h-32 xl:w-48 xl:h-48' : 'w-20 h-20 xl:w-28 xl:h-28 ml-auto opacity-70'}`}>
+                        <div className="absolute inset-0 bg-p5-pattern opacity-10"></div>
+                        <div className={`relative z-10 grid gap-1 transform ${isFirst ? 'scale-100 xl:scale-125' : 'scale-75 xl:scale-100'}`} style={{ 
+                             gridTemplateColumns: `repeat(${piece.shape[0].length}, 1fr)`,
+                         }}>
+                            {piece.shape.map((row, y) => 
+                                row.map((cell, x) => (
+                                    <div key={`${x}-${y}`} className={`w-4 h-4 xl:w-6 xl:h-6 ${cell ? '' : 'transparent'}`} 
+                                         style={{ 
+                                             backgroundColor: cell ? piece.color : 'transparent',
+                                             border: cell ? '2px solid rgba(255,255,255,0.8)' : 'none',
+                                             boxShadow: cell ? `0 0 15px ${piece.color}` : 'none'
+                                         }}>
+                                    </div>
+                                ))
+                            )}
+                         </div>
+                    </div>
+                );
+            })}
         </div>
     );
 };

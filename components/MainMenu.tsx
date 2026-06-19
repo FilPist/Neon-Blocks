@@ -103,15 +103,15 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                         </div>
 
                         <MenuButton label={t.start} onClick={() => onStart('classic')} primary small />
-                        { (profile.gamesPlayed || 0) >= 3 ? (
+                        { profile.unlockedAbilities.includes('mode_abilities') ? (
                             <div className="relative group w-full">
                                 <MenuButton label={t.abilitiesMode || "ABILITIES MODE"} onClick={() => onStart('abilities')} small />
                                 <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-2 rotate-12 bg-p5-red text-white text-[10px] font-bold px-2 py-0.5 shadow-neon-pink z-20 animate-pulse pointer-events-none">
-                                    WIP / BETA
+                                    BETA
                                 </div>
                             </div>
                         ) : (
-                            <MenuButton label={(t.abilitiesMode || "ABILITIES MODE") + ` [LOCKED - PLAY ${3 - (profile.gamesPlayed || 0)} MORE]`} onClick={() => {}} small active={false} />
+                            <MenuButton label={(t.abilitiesMode || "ABILITIES MODE") + ` [LOCKED - BUY IN SHOP]`} onClick={() => {playSound('lock', settings.soundVolume);}} small active={false} />
                         )}
                         <div className="relative group w-full">
                             <MenuButton label={t.shop || "SHOP"} onClick={onOpenShop} active={true} small />
@@ -170,7 +170,22 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 <div className="flex-1 overflow-y-auto p-8 lg:p-12 text-left font-p5-ui custom-scrollbar pb-24">
                     <div className="border-l-4 border-p5-cyan bg-p5-cyan/5 p-6 mb-8 transform -skew-x-2">
                         <div className="transform skew-x-2">
-                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.9 (CURRENT)</h3>
+                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.1.0 (CURRENT)</h3>
+                            <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
+                                <li><span className="text-p5-green font-bold">REFACTOR:</span> Complete game logic refactoring and system optimization.</li>
+                                <li><span className="text-p5-purple font-bold">REWORK:</span> Complete overhaul of abilities, abilities mode logic, and shop system. Reworked passives.</li>
+                                <li><span className="text-p5-yellow font-bold">NEW:</span> Implemented Passive abilities.</li>
+                                <li><span className="text-p5-cyan font-bold">NEW:</span> Custom stylized mouse cursor added globally.</li>
+                                <li><span className="text-p5-cyan font-bold">NEW:</span> Profile reset functionality implemented.</li>
+                                <li><span className="text-p5-red font-bold">UPDATE:</span> Shop Cosmetics system skeleton implemented (Work In Progress, to be fully implemented in a future update).</li>
+                                <li><span className="text-p5-yellow font-bold">SECRET:</span> Added hidden secrets... try to find them if you can!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="border-l-4 border-p5-purple bg-p5-purple/5 p-6 mb-8 transform -skew-x-2 opacity-70 hover:opacity-100 transition-opacity">
+                        <div className="transform skew-x-2">
+                            <h3 className="text-xl font-p5-display text-p5-purple mb-3 tracking-widest outline-text">VERSION 1.0.9</h3>
                             <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
                                 <li><span className="text-p5-purple font-bold">NEW:</span> Upgraded Shop interface with dual modules (Active/Passive).</li>
                                 <li><span className="text-p5-purple font-bold">NEW:</span> Redesigned Pause Menu aligning with sleek modal aesthetics.</li>

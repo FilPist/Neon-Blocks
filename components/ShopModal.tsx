@@ -9,12 +9,13 @@ interface ShopModalProps {
     onClose: () => void;
     profile: Profile;
     onPurchase: (abilityId: string, cost: number) => void;
+    onToggleEquip: (abilityId: string, type: string) => void;
     language: 'en' | 'it';
 }
 
-const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurchase, language }) => {
+const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurchase, onToggleEquip, language }) => {
     const t = TRANSLATIONS[language];
-    const [activeTab, setActiveTab] = useState<'active' | 'passive'>('active');
+    const [activeTab, setActiveTab] = useState<'active' | 'passive' | 'upgrades' | 'cosmetic'>('active');
 
     const handlePurchase = (abilityId: string, cost: number) => {
         if (profile.coins >= cost && !profile.unlockedAbilities.includes(abilityId)) {
@@ -24,7 +25,15 @@ const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurch
 
     if (!isOpen) return null;
 
-    const displayedItems = ABILITIES.filter(a => a.type === activeTab);
+    const displayedItems = ABILITIES.filter(a => {
+        if (activeTab === 'active') return a.type === 'active';
+        if (activeTab === 'passive') return a.type === 'passive' || a.type === 'toggle';
+        if (activeTab === 'upgrades') return a.type === 'mode' || a.type === 'upgrade';
+        if (activeTab === 'cosmetic') return a.type === 'cosmetic';
+        return false;
+    });
+
+    const getMaxSlots = () => profile.unlockedAbilities.includes('slot_2') ? 3 : profile.unlockedAbilities.includes('slot_1') ? 2 : 1;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center font-p5-ui p-4">
@@ -59,34 +68,64 @@ const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurch
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-4 mb-6 font-p5-display tracking-widest text-lg sm:text-xl">
+                    <div className="flex gap-2 mb-6 font-p5-display tracking-widest text-sm sm:text-lg overflow-x-auto pb-2 custom-scrollbar">
                         <button
-                            onClick={() => {
-                                playSound('hover', 50);
-                                setActiveTab('active');
-                            }}
-                            className={`flex-1 py-3 transition-colors uppercase border-b-4 ${activeTab === 'active' ? 'border-p5-red text-p5-red bg-p5-red/10' : 'border-white/20 text-white/50 hover:bg-white/5'}`}
+                            onClick={() => { playSound('hover', 50); setActiveTab('active'); }}
+                            className={`flex whitespace-nowrap px-4 py-3 transition-colors uppercase border-b-4 ${activeTab === 'active' ? 'border-p5-red text-p5-red bg-p5-red/10' : 'border-white/20 text-white/50 hover:bg-white/5'}`}
                         >
                             <div className="flex items-center justify-center gap-2">
-                                <Icons.Zap size={20} />
-                                {language === 'it' ? 'ABILITÀ ATTIVE' : 'ACTIVE ABILITIES'}
+                                <Icons.Zap size={18} />
+                                {language === 'it' ? 'ATTIVE' : 'ACTIVES'}
                             </div>
                         </button>
                         <button
-                            onClick={() => {
-                                playSound('hover', 50);
-                                setActiveTab('passive');
-                            }}
-                            className={`flex-1 py-3 transition-colors uppercase border-b-4 ${activeTab === 'passive' ? 'border-p5-purple text-p5-purple bg-p5-purple/10' : 'border-white/20 text-white/50 hover:bg-white/5'}`}
+                            onClick={() => { playSound('hover', 50); setActiveTab('passive'); }}
+                            className={`flex whitespace-nowrap px-4 py-3 transition-colors uppercase border-b-4 ${activeTab === 'passive' ? 'border-p5-purple text-p5-purple bg-p5-purple/10' : 'border-white/20 text-white/50 hover:bg-white/5'}`}
                         >
                             <div className="flex items-center justify-center gap-2">
-                                <Icons.Compass size={20} />
-                                {language === 'it' ? 'MODULI PASSIVI' : 'PASSIVE MODULES'}
+                                <Icons.Compass size={18} />
+                                {language === 'it' ? 'PASSIVE' : 'PASSIVES'}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => { playSound('hover', 50); setActiveTab('upgrades'); }}
+                            className={`flex whitespace-nowrap px-4 py-3 transition-colors uppercase border-b-4 ${activeTab === 'upgrades' ? 'border-p5-cyan text-p5-cyan bg-p5-cyan/10' : 'border-white/20 text-white/50 hover:bg-white/5'}`}
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                <Icons.Cpu size={18} />
+                                {language === 'it' ? 'SISTEMA' : 'SYSTEM'}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => { playSound('hover', 50); setActiveTab('cosmetic'); }}
+                            className={`flex whitespace-nowrap px-4 py-3 transition-colors uppercase border-b-4 ${activeTab === 'cosmetic' ? 'border-p5-yellow text-p5-yellow bg-p5-yellow/10' : 'border-white/20 text-white/50 hover:bg-white/5'}`}
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                <Icons.Palette size={18} />
+                                {language === 'it' ? 'ESTETICA' : 'COSMETICS'}
                             </div>
                         </button>
                     </div>
 
+                    {/* Active Slots Info */}
+                    {activeTab === 'active' && (
+                        <div className="text-right text-p5-red font-p5-ui text-sm mb-2 -mt-4 tracking-widest">
+                            {language === 'it' ? 'SLOT ATTIVI UTILIZZATI:' : 'ACTIVE SLOTS USED:'} {(profile.equippedActives || []).length} / {getMaxSlots()}
+                        </div>
+                    )}
+
                     {/* Items Grid */}
+                    {activeTab === 'cosmetic' ? (
+                        <div className="flex flex-col items-center justify-center p-12 text-center border-2 border-white/10 bg-black/40">
+                            <Icons.Paintbrush size={48} className="text-p5-yellow mb-4 opacity-50" />
+                            <h3 className="text-2xl font-p5-display text-white mb-2 uppercase">WORK IN PROGRESS</h3>
+                            <p className="text-white/60 font-p5-ui text-lg">
+                                {language === 'it' 
+                                    ? 'Le skin e i temi cosmetici sono attualmente dei placeholder work in progress. Non è possibile acquistarli per ora. Dovremo implementarli in futuro!'
+                                    : 'Skins and cosmetic themes are currently work in progress placeholders. They cannot be purchased right now. We will implement them in the future!'}
+                            </p>
+                        </div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar pb-4">
                         {displayedItems.map(ability => {
                             const isUnlocked = profile.unlockedAbilities.includes(ability.id);
@@ -125,34 +164,66 @@ const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurch
                                         {ability.desc}
                                     </p>
                                     
-                                    <button 
-                                        onClick={() => {
-                                            playSound('click', 50);
-                                            handlePurchase(ability.id, ability.cost);
-                                        }}
-                                        disabled={isUnlocked || !canAfford}
-                                        className={`
-                                            w-full py-3 font-p5-display text-xl tracking-widest transition-all uppercase flex items-center justify-center gap-2 transform -skew-x-6 border-2
-                                            ${isUnlocked 
-                                                ? `bg-black/50 ${textColor} ${borderColor} cursor-default` 
-                                                : !canAfford 
-                                                    ? 'bg-black/50 text-white/30 border-white/10 cursor-not-allowed'
-                                                    : `bg-black text-white ${borderColor} ${hoverBg} ${shadowColor} active:scale-95`}
-                                        `}
-                                    >
-                                        <span className="transform skew-x-6 flex items-center gap-2">
-                                            {isUnlocked ? (
-                                                <>
-                                                    <Icons.CheckCircle2 size={20} />
-                                                    {language === 'it' ? 'INSTALLATO' : 'INSTALLED'}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {ability.cost} COINS
-                                                </>
-                                            )}
-                                        </span>
-                                    </button>
+                                    {(() => {
+                                        const isActiveType = ability.type === 'active';
+                                        const isToggleType = ability.type === 'toggle';
+                                        const isCosmeticType = ability.type === 'cosmetic';
+                                        const canEquip = isActiveType || isToggleType || isCosmeticType;
+                                        
+                                        const isEquipped = 
+                                            (isActiveType && (profile.equippedActives || []).includes(ability.id)) ||
+                                            (isToggleType && (profile.equippedPassives || []).includes(ability.id)) ||
+                                            (isCosmeticType && profile.activeCosmetic === ability.id);
+
+                                        return (
+                                            <button 
+                                                onClick={() => {
+                                                    playSound('click', 50);
+                                                    if (!isUnlocked) {
+                                                        handlePurchase(ability.id, ability.cost);
+                                                    } else if (canEquip) {
+                                                        onToggleEquip(ability.id, ability.type);
+                                                    }
+                                                }}
+                                                disabled={(!isUnlocked && !canAfford)}
+                                                className={`
+                                                    w-full py-3 font-p5-display text-xl tracking-widest transition-all uppercase flex items-center justify-center gap-2 transform -skew-x-6 border-2
+                                                    ${isUnlocked 
+                                                        ? (canEquip ? (isEquipped ? 'bg-black text-white hover:bg-black/50 border-white text-white' : `bg-black/50 ${textColor} ${borderColor} hover:bg-black active:scale-95`) : `bg-black/50 ${textColor} ${borderColor} cursor-default`)
+                                                        : !canAfford 
+                                                            ? 'bg-black/50 text-white/30 border-white/10 cursor-not-allowed'
+                                                            : `bg-black text-white ${borderColor} ${hoverBg} ${shadowColor} active:scale-95`}
+                                                `}
+                                            >
+                                                <span className="transform skew-x-6 flex items-center gap-2">
+                                                    {isUnlocked ? (
+                                                        canEquip ? (
+                                                            isEquipped ? (
+                                                                <>
+                                                                    <Icons.CheckSquare size={20} />
+                                                                    {language === 'it' ? 'DISATTIVA' : 'UNEQUIP'}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Icons.Square size={20} />
+                                                                    {language === 'it' ? 'ATTIVA' : 'EQUIP'}
+                                                                </>
+                                                            )
+                                                        ) : (
+                                                            <>
+                                                                <Icons.CheckCircle2 size={20} />
+                                                                {language === 'it' ? 'INSTALLATO' : 'INSTALLED'}
+                                                            </>
+                                                        )
+                                                    ) : (
+                                                        <>
+                                                            {ability.cost} COINS
+                                                        </>
+                                                    )}
+                                                </span>
+                                            </button>
+                                        );
+                                    })()}
                                 </div>
                             );
                         })}
@@ -162,7 +233,7 @@ const ShopModal: React.FC<ShopModalProps> = ({ isOpen, onClose, profile, onPurch
                             </div>
                         )}
                     </div>
-
+                    )}
                     
                     {/* Footer Close */}
                     <div className="flex justify-center mt-4">

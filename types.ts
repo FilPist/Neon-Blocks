@@ -44,6 +44,9 @@ export interface Profile {
   level: number;
   xp: number;
   unlockedAbilities: string[];
+  equippedActives?: string[]; // newly added for loadout
+  equippedPassives?: string[]; // newly added for toggle passives
+  activeCosmetic?: string; // e.g. 'pixel', 'synthwave'
   hasSeenOnboarding?: boolean;
   hasSeenAbilitiesOnboarding?: boolean;
   gamesPlayed?: number;

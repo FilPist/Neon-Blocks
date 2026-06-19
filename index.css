@@ -197,3 +197,35 @@
     opacity: 0.05;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
+
+/* Cosmetics */
+.theme-synthwave {
+    --color-p5-red: #ff007f;     
+    --color-p5-pink: #ff007f;    
+    --color-p5-dark: #2b00ff;    
+    --color-p5-cyan: #00f0ff;    
+    --color-p5-purple: #9d00ff;  
+    --color-p5-blue: #00d2ff;
+    --shadow-neon-pink: 0 0 10px rgba(255, 0, 127, 0.8), 0 0 30px rgba(255, 0, 127, 0.6);
+    --board-background: linear-gradient(to bottom, #110022 0%, #300055 50%, #ff007f 100%);
+}
+
+.theme-pixel {
+    --font-p5-display: 'Courier New', monospace;
+    --font-p5-ui: 'Courier New', monospace;
+    --shadow-hard-black: 4px 4px 0px 0px rgba(5, 5, 16, 1);
+    --shadow-hard-white: 4px 4px 0px 0px rgba(224, 224, 224, 1);
+}
+.theme-pixel .board-face {
+    clip-path: none !important;
+    border-radius: 0 !important;
+    text-transform: uppercase !important;
+}
+
+body {
+    cursor: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 4L10 22L13.5 13.5L22 10L4 4Z' fill='%2305d9e8' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E") 4 4, auto;
+}
+
+button, a, [role="button"], .cursor-pointer {
+    cursor: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 4L10 22L13.5 13.5L22 10L4 4Z' fill='%23ff2a6d' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E") 4 4, pointer !important;
+}

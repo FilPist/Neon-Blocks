@@ -1,6 +1,7 @@
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { BoardGrid, TetrominoType, Popup } from '../types';
+import { checkCollision } from '../lib/tetris';
 
 interface BoardProps {
   grid: BoardGrid;
@@ -15,16 +16,19 @@ interface BoardProps {
   popups: Popup[];
   hardDropTrails?: {col: number, color: string, id: number}[];
   lines?: number;
+  wrapActive?: boolean;
+  extendedGhost?: boolean;
+  themeClass?: string;
 }
 
-const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropTrails = [], lines = 0 }) => {
+const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropTrails = [], lines = 0, wrapActive = false, extendedGhost = false, themeClass = '' }) => {
   const [flash, setFlash] = useState(false);
   const prevLines = useRef(lines);
 
   useEffect(() => {
      if (lines > prevLines.current) {
          setFlash(true);
-         setTimeout(() => setFlash(false), 300);
+         setTimeout(() => setFlash(false), 200);
      }
      prevLines.current = lines;
   }, [lines]);
@@ -36,21 +40,8 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
     if (piece) {
         const shape = piece.shape;
         let tempY = piece.y;
-        
-        const check = (offY: number) => {
-             for(let r=0; r<shape.length; r++) {
-                 for(let c=0; c<shape[r].length; c++) {
-                     if(shape[r][c]) {
-                         const ny = tempY + offY + r;
-                         const nx = piece.x + c;
-                         if (ny >= 20 || (ny >= 0 && grid[ny][nx].locked)) return true;
-                     }
-                 }
-             }
-             return false;
-        }
 
-        while(!check(1)) {
+        while(!checkCollision(shape, piece.x, tempY + 1, grid, wrapActive)) {
             tempY++;
         }
         ghostY = tempY;
@@ -60,8 +51,12 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
                 row.forEach((value, c) => {
                     if (value) {
                         const gy = ghostY + r;
-                        const gx = piece.x + c;
-                        if (gy >= 0 && gy < 20 && !displayGrid[gy][gx].value) {
+                        let gx = piece.x + c;
+                        if (wrapActive) {
+                            while (gx < 0) gx += 10;
+                            while (gx >= 10) gx -= 10;
+                        }
+                        if (gy >= 0 && gy < 20 && gx >= 0 && gx < 10 && !displayGrid[gy][gx].value) {
                             displayGrid[gy][gx] = { 
                                 value: piece.type, 
                                 locked: false, 
@@ -78,7 +73,11 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
             row.forEach((value, c) => {
                 if (value !== 0) {
                     const y = piece.y + r;
-                    const x = piece.x + c;
+                    let x = piece.x + c;
+                    if (wrapActive) {
+                        while (x < 0) x += 10;
+                        while (x >= 10) x -= 10;
+                    }
                     if (y >= 0 && y < displayGrid.length && x >= 0 && x < displayGrid[0].length) {
                         displayGrid[y][x] = { 
                             value: piece.type, 
@@ -92,16 +91,17 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
         });
     }
     return { displayGrid };
-  }, [grid, piece]);
+  }, [grid, piece, wrapActive]);
 
   return (
-    <div className={`relative mx-auto transition-transform ${isShaking ? 'animate-shake' : ''}`}>
+    <div className={`relative mx-auto transition-transform ${isShaking ? 'animate-shake' : ''} ${themeClass}`}>
         <div className="absolute -inset-6 bg-gradient-to-tr from-p5-purple to-p5-blue transform rotate-1 skew-x-2 opacity-50 z-0 blur-2xl transition-opacity duration-300" style={{ opacity: isShaking ? 0.9 : 0.4 }} />
         <div className="absolute -inset-3 bg-black transform -rotate-1 z-0 border-4 border-p5-blue shadow-hard-black" />
         
         <div 
-            className="relative z-10 bg-[#0a0a1f] overflow-hidden shadow-hard-black border-2 border-white/20 mx-auto"
+            className="relative board-face z-10 overflow-hidden shadow-hard-black border-2 border-white/20 mx-auto"
             style={{ 
+                background: 'var(--board-background, #0a0a1f)',
                 aspectRatio: '10 / 20', 
                 height: 'min(80vh, 150vw)', 
                 maxHeight: '850px' 

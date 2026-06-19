@@ -3,13 +3,13 @@ import { Tetromino, TetrominoType, Keybindings, Settings } from './types';
 
 // Standardized Neon Blocks Palette
 const COLORS = {
-  CYAN: '#05d9e8',    
-  BLUE: '#304ffe',    
-  ORANGE: '#ff9100',  
-  YELLOW: '#fcee0a',  
-  GREEN: '#00ff9d',   
-  PURPLE: '#d300c5',  
-  PINK: '#ff2a6d',    
+  CYAN: 'var(--color-p5-cyan, #05d9e8)',    
+  BLUE: 'var(--color-p5-blue, #304ffe)',    
+  ORANGE: 'var(--color-p5-orange, #ff9100)',  
+  YELLOW: 'var(--color-p5-yellow, #fcee0a)',  
+  GREEN: 'var(--color-p5-green, #00ff9d)',   
+  PURPLE: 'var(--color-p5-purple, #d300c5)',  
+  PINK: 'var(--color-p5-pink, #ff2a6d)',    
 };
 
 export const STORAGE_KEY = 'neon_blocks_highscores';
@@ -108,14 +108,32 @@ export const SPEED_DECREMENT = 70; // Increased decrement for faster ramp-up
 export const MIN_SPEED = 80;
 
 export const ABILITIES = [
+  // Modes
+  { id: 'mode_abilities', name: 'ABILITIES MODE', type: 'mode', cost: 100, desc: 'Unlocks the Abilities Game Mode with coin economy.', icon: 'Gamepad2' },
+  
+  // Slot Upgrades
+  { id: 'slot_1', name: 'SLOT UPGRADE I', type: 'upgrade', cost: 200, desc: 'Increases max equipped active abilities to 2.', icon: 'PlusSquare' },
+  { id: 'slot_2', name: 'SLOT UPGRADE II', type: 'upgrade', cost: 500, desc: 'Increases max equipped active abilities to 3. Requires Slot Upgrade I.', icon: 'PlusSquare' },
+
+  // Actives
   { id: 'wipe', name: 'ROW WIPE', type: 'active', cost: 100, desc: 'Clears the bottom-most row of blocks.', icon: 'Zap', cooldown: 30 },
   { id: 'bomb', name: 'BOMB', type: 'active', cost: 250, desc: 'Clears a 5x5 area around the lowest point.', icon: 'Bomb', cooldown: 45 },
-  { id: 'freeze', name: 'TIME FREEZE', type: 'active', cost: 300, desc: 'Halts piece falling for 8 seconds.', icon: 'Clock', cooldown: 60 },
   { id: 'swap', name: 'PIECE SWAP', type: 'active', cost: 150, desc: 'Swaps the current piece with the next one.', icon: 'RefreshCcw', cooldown: 20 },
-  { id: 'collapse', name: 'GRAVITY WELL', type: 'active', cost: 400, desc: 'Forces all blocks to fall down, filling gaps.', icon: 'ArrowDownToLine', cooldown: 75 },
+  { id: 'collapse', name: 'GRAVITY WELL', type: 'active', cost: 600, desc: 'Forces all blocks to fall down, filling gaps.', icon: 'ArrowDownToLine', cooldown: 120 },
+  { id: 'wrap', name: 'WRAP AROUND', type: 'active', cost: 350, desc: 'For 10 seconds, pieces wrap through horizontal edges.', icon: 'MoveHorizontal', cooldown: 60 },
+
+  // Passives (Always on)
   { id: 'magnet', name: 'COIN MAGNET', type: 'passive', cost: 1000, desc: 'Doubles all coins earned from playing.', icon: 'Magnet' },
   { id: 'score_boost', name: 'SCORE BOOSTER', type: 'passive', cost: 750, desc: 'Increases all points gained by 25%.', icon: 'TrendingUp' },
-  { id: 'slow_start', name: 'CALM START', type: 'passive', cost: 500, desc: 'Initial drop speed is 20% slower.', icon: 'Turtle' }
+  { id: 'slow_start', name: 'CALM START', type: 'passive', cost: 500, desc: 'Initial drop speed is 20% slower.', icon: 'Turtle' },
+
+  // Toggles (Toggleable passives)
+  { id: 'clairvoyance', name: 'CLAIRVOYANCE', type: 'toggle', cost: 800, desc: 'See up to 3 next pieces instead of 1.', icon: 'Eye' },
+  { id: 'extended_ghost', name: 'EXTENDED GHOST', type: 'toggle', cost: 400, desc: 'Enhances ghost piece visibility and trails.', icon: 'Ghost' },
+
+  // Cosmetics
+  { id: 'cosmetic_pixel', name: 'PIXEL ART THEME', type: 'cosmetic', cost: 1200, desc: 'Changes the game aesthetic to retro pixel art.', icon: 'Palette' },
+  { id: 'cosmetic_synth', name: 'SYNTHWAVE THEME', type: 'cosmetic', cost: 1200, desc: 'Changes the game aesthetic to 80s outrun synthwave.', icon: 'Palette' }
 ];
 
 export const TRANSLATIONS = {
@@ -130,7 +148,7 @@ export const TRANSLATIONS = {
     sound: "MASTER VOLUME",
     language: "INTERFACE LANG",
     back: "RETURN",
-    ticker: "ATTENTION: SYSTEM OPTIMIZATION IN PROGRESS // ACCESSING NEON CORE // RUNNING PROTOCOL 1.0.9 // DATA FLOW STABILIZED //",
+    ticker: "ATTENTION: SYSTEM OPTIMIZATION IN PROGRESS // ACCESSING NEON CORE // RUNNING PROTOCOL 1.1.0 // DATA FLOW STABILIZED //",
     system: "CORE NAVIGATOR",
     ready: "READY TO RUN",
     paused: "SIGNAL PAUSED",
@@ -181,7 +199,7 @@ export const TRANSLATIONS = {
     sound: "VOLUME MASTER",
     language: "LINGUA INTERFACCIA",
     back: "INDIETRO",
-    ticker: "ATTENZIONE: OTTIMIZZAZIONE SISTEMA IN CORSO // ACCESSO AL CORE NEON // PROTOCOLLO 1.0.9 ATTIVO // FLUSSO DATI STABILIZZATO //",
+    ticker: "ATTENZIONE: OTTIMIZZAZIONE SISTEMA IN CORSO // ACCESSO AL CORE NEON // PROTOCOLLO 1.1.0 ATTIVO // FLUSSO DATI STABILIZZATO //",
     system: "NAVIGATORE CORE",
     ready: "PRONTO AL LANCIO",
     paused: "SEGNALE IN PAUSA",

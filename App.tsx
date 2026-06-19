@@ -35,6 +35,9 @@ const App: React.FC = () => {
       level: 1,
       xp: 0,
       unlockedAbilities: ['wipe'],
+      equippedActives: ['wipe'],
+      equippedPassives: [],
+      activeCosmetic: 'default',
       hasSeenOnboarding: false,
       gamesPlayed: 0
   });
@@ -62,10 +65,20 @@ const App: React.FC = () => {
               if (parsed.gamesPlayed === undefined) {
                   parsed.gamesPlayed = 0;
               }
+              
+              if (!parsed.equippedActives) {
+                  parsed.equippedActives = parsed.unlockedAbilities.filter((id: string) => {
+                      const ab = ABILITIES.find(a => a.id === id);
+                      return ab && ab.type === 'active';
+                  }).slice(0, parsed.unlockedAbilities.includes('slot_2') ? 3 : parsed.unlockedAbilities.includes('slot_1') ? 2 : 1);
+              }
+              if (!parsed.equippedPassives) parsed.equippedPassives = [];
+              if (!parsed.activeCosmetic) parsed.activeCosmetic = 'default';
+
               setProfile(parsed);
           } else {
               localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
-                  coins: 0, level: 1, xp: 0, unlockedAbilities: ['wipe'], hasSeenOnboarding: false, hasSeenAbilitiesOnboarding: false, gamesPlayed: 0
+                  coins: 0, level: 1, xp: 0, unlockedAbilities: ['wipe'], equippedActives: ['wipe'], equippedPassives: [], activeCosmetic: 'default', hasSeenOnboarding: false, hasSeenAbilitiesOnboarding: false, gamesPlayed: 0
               }));
           }
       } catch (e) {
@@ -91,6 +104,11 @@ const App: React.FC = () => {
       });
   }, []);
 
+  const passives = React.useMemo(() => ({
+      scoreBoost: profile.unlockedAbilities.includes('score_boost'),
+      slowStart: profile.unlockedAbilities.includes('slow_start')
+  }), [profile.unlockedAbilities]);
+
   const {
     grid,
     piece,
@@ -101,7 +119,7 @@ const App: React.FC = () => {
     isPaused,
     isPlaying,
     isShaking,
-    nextPieceType,
+    nextPieces,
     popups,
     highScores,
     speedRatio,
@@ -111,15 +129,13 @@ const App: React.FC = () => {
     triggerAbility,
     holdPieceType,
     playTime,
-    hardDropTrails
+    hardDropTrails,
+    wrapActive
   } = useTetris(
     settings.soundVolume, 
     handleCoinsEarned, 
     settings,
-    {
-      scoreBoost: profile.unlockedAbilities.includes('score_boost'),
-      slowStart: profile.unlockedAbilities.includes('slow_start')
-    }
+    passives
   );
 
   const formatTime = (seconds: number) => {
@@ -173,24 +189,18 @@ const App: React.FC = () => {
       triggerAbility(id);
   }, [cooldowns, triggerAbility]);
 
+  const activeAbilities = React.useMemo(() => {
+      return profile.equippedActives || [];
+  }, [profile.equippedActives]);
+
   // Ability Hotkeys
   useEffect(() => {
      const handleKeyDown = (e: KeyboardEvent) => {
          if (gameMode !== 'abilities' || isPaused || gameOver || !showGame) return;
          
-         const activeAbilities = profile.unlockedAbilities.filter(id => {
-             const ab = ABILITIES.find(a => a.id === id);
-             return ab && ab.type === 'active';
-         });
-         
          const key = e.key;
-         if (['1', '3', '4', '5', '6'].includes(key)) {
-             let index = -1;
-             if (key === '1') index = 0;
-             else if (key === '3') index = 1;
-             else if (key === '4') index = 2;
-             else if (key === '5') index = 3;
-             else if (key === '6') index = 4;
+         if (['1', '2', '3', '4', '5'].includes(key)) {
+             const index = parseInt(key) - 1;
              
              if (index >= 0 && index < activeAbilities.length) {
                  handleTriggerAbility(activeAbilities[index]);
@@ -199,12 +209,43 @@ const App: React.FC = () => {
      };
      window.addEventListener('keydown', handleKeyDown);
      return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameMode, profile.unlockedAbilities, handleTriggerAbility, isPaused, gameOver, showGame]);
+  }, [gameMode, activeAbilities, handleTriggerAbility, isPaused, gameOver, showGame]);
 
   // Highest score from storage
   const bestScore = highScores.length > 0 ? highScores[0].score : 0;
 
   const [showGamePending, setShowGamePending] = useState<GameMode | null>(null);
+  const [konamiMessage, setKonamiMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let konamiIndex = 0;
+
+    const handleKonami = (e: KeyboardEvent) => {
+        if (showGame) return;
+        if (e.key.toLowerCase() === konamiSequence[konamiIndex].toLowerCase() || e.key === konamiSequence[konamiIndex]) {
+            konamiIndex++;
+            if (konamiIndex === konamiSequence.length) {
+                konamiIndex = 0;
+                playSound('select', settings.soundVolume);
+                setProfile(prev => {
+                    const np = { ...prev };
+                    np.coins = (np.coins || 0) + 50000;
+                    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(np));
+                    return np;
+                });
+                setKonamiMessage(settings.language === 'it' 
+                  ? "Livello segreto 1984 non aggiunto, ma il codice Konami ha funzionato. Hai ricevuto 50.000 COIN!" 
+                  : "Secret level 1984 not added, but the Konami code worked. You received 50,000 COINS!");
+            }
+        } else {
+            konamiIndex = 0;
+        }
+    };
+
+    window.addEventListener('keydown', handleKonami);
+    return () => window.removeEventListener('keydown', handleKonami);
+  }, [showGame, settings.soundVolume, settings.language]);
 
   const executeStart = useCallback((mode: GameMode = 'classic') => {
       setGameMode(mode);
@@ -266,8 +307,36 @@ const App: React.FC = () => {
       setShowCookieConsent(false);
   };
 
+  const handleToggleEquip = useCallback((id: string, type: string) => {
+      setProfile(prev => {
+          let np = { ...prev };
+          if (type === 'active') {
+              const maxSlots = np.unlockedAbilities.includes('slot_2') ? 3 : np.unlockedAbilities.includes('slot_1') ? 2 : 1;
+              const currentlyEquipped = np.equippedActives || [];
+              if (currentlyEquipped.includes(id)) {
+                  np.equippedActives = currentlyEquipped.filter(a => a !== id);
+              } else {
+                  if (currentlyEquipped.length < maxSlots) {
+                      np.equippedActives = [...currentlyEquipped, id];
+                  }
+              }
+          } else if (type === 'toggle') {
+              const currentlyEquipped = np.equippedPassives || [];
+              if (currentlyEquipped.includes(id)) {
+                  np.equippedPassives = currentlyEquipped.filter(a => a !== id);
+              } else {
+                  np.equippedPassives = [...currentlyEquipped, id];
+              }
+          } else if (type === 'cosmetic') {
+              np.activeCosmetic = np.activeCosmetic === id ? 'default' : id;
+          }
+          localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(np));
+          return np;
+      });
+  }, []);
+
   return (
-    <div className="relative min-h-screen w-full overflow-hidden font-p5-ui select-none bg-[#050510]">
+    <div className={`relative min-h-screen w-full overflow-hidden font-p5-ui select-none bg-[#050510]`}>
       {/* Dynamic Background Intensity based on Speed/Level */}
       <P5Background intensity={speedRatio} />
       
@@ -383,6 +452,9 @@ const App: React.FC = () => {
                     popups={popups} 
                     hardDropTrails={hardDropTrails}
                     lines={lines}
+                    wrapActive={wrapActive}
+                    extendedGhost={profile.equippedPassives?.includes('extended_ghost')}
+                    themeClass={profile.activeCosmetic === 'cosmetic_synth' ? 'theme-synthwave' : profile.activeCosmetic === 'cosmetic_pixel' ? 'theme-pixel' : ''}
                   />
               </div>
 
@@ -392,7 +464,10 @@ const App: React.FC = () => {
                     transition-all duration-700 ease-out-expo origin-left
                     ${isPaused && !gameOver ? 'translate-x-[100vw] rotate-[5deg] opacity-0' : 'translate-x-0 rotate-0 opacity-100 animate-slam-in'}
               `}>
-                  <NextPiece type={nextPieceType} />
+                  <NextPiece 
+                      types={nextPieces} 
+                      clairvoyant={profile.equippedPassives?.includes('clairvoyance')} 
+                  />
                   
                   {gameMode === 'abilities' && (
                       <div className="flex flex-col gap-1.5 w-full max-w-[240px] xl:max-w-[280px]">
@@ -401,33 +476,13 @@ const App: React.FC = () => {
                               <span className="text-p5-cyan">{profile.coins}</span>
                           </div>
                           <div className="grid grid-cols-2 gap-1.5">
-                              {profile.unlockedAbilities.map(id => {
+                              {activeAbilities.map((id, index) => {
                                   const ab = ABILITIES.find(a => a.id === id);
                                   if (!ab) return null;
                                   // @ts-ignore
                                   const IconComponent = Icons[ab.icon] || Icons.Zap;
                                   
-                                  if (ab.type === 'passive') {
-                                      return (
-                                          <div key={id} className="bg-black/50 border border-white/10 p-1.5 flex flex-col items-center justify-center gap-0.5 text-white/40">
-                                              <IconComponent className="w-4 h-4 xl:w-5 xl:h-5 mt-1" />
-                                              <span className="text-[9px] uppercase font-bold tracking-wider text-center leading-tight">{ab.name}</span>
-                                          </div>
-                                      );
-                                  }
-
-                                  const activeAbilities = profile.unlockedAbilities.filter(uId => {
-                                      const uAb = ABILITIES.find(a => a.id === uId);
-                                      return uAb && uAb.type === 'active';
-                                  });
-                                  const activeIndex = activeAbilities.indexOf(id);
-                                  
-                                  let hotkeyNumber = "1";
-                                  if (activeIndex === 0) hotkeyNumber = "1";
-                                  else if (activeIndex === 1) hotkeyNumber = "3";
-                                  else if (activeIndex === 2) hotkeyNumber = "4";
-                                  else if (activeIndex === 3) hotkeyNumber = "5";
-                                  else if (activeIndex === 4) hotkeyNumber = "6";
+                                  const hotkeyNumber = (index + 1).toString();
 
                                   return (
                                       <button 
@@ -510,6 +565,7 @@ const App: React.FC = () => {
         onClose={() => setShowShop(false)} 
         profile={profile} 
         language={settings.language}
+        onToggleEquip={handleToggleEquip}
         onPurchase={(abilityId, cost) => {
             setProfile(prev => {
                 const newProfile = {
@@ -522,6 +578,15 @@ const App: React.FC = () => {
             });
         }} 
       />
+
+      <Modal title="SYSTEM OVERRIDE" isOpen={!!konamiMessage} onClose={() => setKonamiMessage(null)} maxWidth="max-w-md">
+          <div className="p-6 text-center space-y-6">
+              <p className="text-xl text-white font-p5-display">{konamiMessage}</p>
+              <div className="flex justify-center">
+                  <MenuButton label="ACKNOWLEDGE" onClick={() => setKonamiMessage(null)} small />
+              </div>
+          </div>
+      </Modal>
     </div>
   );
 };
