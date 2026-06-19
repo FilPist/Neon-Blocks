@@ -39,11 +39,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
     
     const [mounted, setMounted] = useState(false);
     const [visible, setVisible] = useState(false);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
 
     useEffect(() => {
         let t: any;
         if (isOpen) {
             setMounted(true);
+             setShowResetConfirm(false); // Reset when opening
             playSound('open_menu', settings.soundVolume);
             t = setTimeout(() => setVisible(true), 50);
         } else {
@@ -232,6 +234,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
                                     </button>
                                  </div>
                              </div>
+
+                              {/* Danger Zone */}
+                              <div className="mt-8 border-2 border-p5-red p-4 bg-p5-red/5 relative overflow-hidden group">
+                                  <div className="absolute inset-0 bg-p5-red/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  <div className="relative z-10 flex flex-col gap-3 text-center">
+                                      <span className="text-p5-red font-p5-display text-xl uppercase tracking-widest flex items-center justify-center gap-2">
+                                          <X size={20} />
+                                          {t.resetData || "FACTORY RESET"}
+                                      </span>
+                                      
+                                        <button 
+                                            onClick={() => {
+                                                playSound('click', settings.soundVolume);
+                                                setShowResetConfirm(true);
+                                            }}
+                                            className="bg-black border-2 border-p5-red text-white font-p5-display text-lg py-2 transform -skew-x-6 hover:bg-p5-red hover:text-black transition-colors"
+                                        >
+                                            <span className="transform skew-x-6 block tracking-widest">{t.resetData || "FACTORY RESET"}</span>
+                                        </button>
+                                  </div>
+                              </div>
                          </div>
 
                          <div className="mt-6 pt-4 flex justify-center shrink-0 border-t-2 border-white/10">
@@ -284,6 +307,41 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
                     </div>
 
             </div>
+
+            {showResetConfirm && (
+                <div className="absolute inset-0 z-[300] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in pointer-events-auto">
+                    <div className="bg-[#050510] border-4 border-p5-red p-6 sm:p-8 max-w-md w-full shadow-neon-pink transform rotate-1 flex flex-col gap-6 text-center animate-slam-in clip-jagged">
+                        <X className="text-p5-red w-16 h-16 mx-auto animate-pulse" />
+                        <h3 className="text-3xl font-p5-display text-white transform -rotate-2 -skew-x-6 tracking-widest text-glitch" data-text={t.resetConfirmTitle || "DANGER: COMPLETE ERASURE"}>
+                            {t.resetConfirmTitle || "DANGER: COMPLETE ERASURE"}
+                        </h3>
+                        <p className="text-white/80 font-p5-ui text-lg leading-relaxed transform -skew-x-2">
+                            {t.resetConfirmDesc || "This will permanently delete all high scores, coins, unlocked abilities, and settings. Are you absolutely sure?"}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                            <button 
+                                onClick={() => {
+                                    playSound('slash', settings.soundVolume);
+                                    localStorage.clear();
+                                    window.location.reload();
+                                }}
+                                className="flex-1 bg-p5-red text-white py-3 border-2 border-p5-red font-p5-display text-xl tracking-widest transform -skew-x-6 shadow-[4px_4px_0_#fff] hover:bg-white hover:text-p5-red hover:border-white transition-colors"
+                            >
+                                <span className="transform skew-x-6 block">{t.resetYes || "CONFIRM ERASURE"}</span>
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    playSound('click', settings.soundVolume);
+                                    setShowResetConfirm(false);
+                                }}
+                                className="flex-1 bg-black text-white py-3 border-2 border-white font-p5-display text-xl tracking-widest transform -skew-x-6 shadow-[4px_4px_0_#fff] hover:bg-white hover:text-black transition-colors"
+                            >
+                                <span className="transform skew-x-6 block">{t.resetNo || "ABORT"}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

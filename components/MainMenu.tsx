@@ -60,7 +60,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                     
                     <div className="mt-8 sm:mt-12 transform rotate-2">
                          <div className="bg-p5-cyan text-black px-4 sm:px-6 py-1 sm:py-2 tracking-[0.4em] font-black text-sm sm:text-xl animate-pulse border-2 border-white shadow-hard-black transform -skew-x-12">
-                             RUNNING PROTOCOL 1.0.8.
+                             RUNNING PROTOCOL 1.0.9.
                          </div>
                     </div>
 
@@ -123,7 +123,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                         <MenuButton label={t.records} onClick={() => setShowRecords(true)} active={true} small />
                         
                         <div className="mt-2 flex justify-between text-p5-cyan font-p5-ui text-[10px] tracking-[0.2em] bg-white/5 backdrop-blur-sm p-3 border-l-4 border-p5-purple">
-                            <span>REVISION // 1.0.8</span>
+                            <span>REVISION // 1.0.9</span>
                             <span>ENCRYPTED_NEURAL_LINK</span>
                         </div>
                      </div>
@@ -170,7 +170,19 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, settings, onUpdateSettings
                 <div className="flex-1 overflow-y-auto p-8 lg:p-12 text-left font-p5-ui custom-scrollbar pb-24">
                     <div className="border-l-4 border-p5-cyan bg-p5-cyan/5 p-6 mb-8 transform -skew-x-2">
                         <div className="transform skew-x-2">
-                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.8 (CURRENT)</h3>
+                            <h3 className="text-2xl font-p5-display text-p5-cyan mb-3 tracking-widest outline-text">VERSION 1.0.9 (CURRENT)</h3>
+                            <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
+                                <li><span className="text-p5-purple font-bold">NEW:</span> Upgraded Shop interface with dual modules (Active/Passive).</li>
+                                <li><span className="text-p5-purple font-bold">NEW:</span> Redesigned Pause Menu aligning with sleek modal aesthetics.</li>
+                                <li><span className="text-p5-yellow font-bold">IMPROVED:</span> Updated onboarding tutorial modal UI readability.</li>
+                                <li><span className="text-p5-red font-bold">NEW:</span> Added Factory Reset option in Settings to permanently wipe all stored data.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="border-l-4 border-p5-purple bg-p5-purple/5 p-6 mb-8 transform -skew-x-2 opacity-70 hover:opacity-100 transition-opacity">
+                        <div className="transform skew-x-2">
+                            <h3 className="text-xl font-p5-display text-p5-purple mb-3 tracking-widest outline-text">VERSION 1.0.8</h3>
                             <ul className="list-disc list-inside space-y-3 text-white/90 text-sm lg:text-base">
                                 <li><span className="text-p5-purple font-bold">NEW:</span> Dynamic Background Music (Chill Menu / Upbeat Game).</li>
                                 <li><span className="text-p5-purple font-bold">NEW:</span> Muffled background music in pause menu.</li>

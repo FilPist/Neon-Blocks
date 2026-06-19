@@ -11,6 +11,7 @@ import IntroSequence from './components/IntroSequence';
 import PauseMenu from './components/PauseMenu';
 import ShopModal from './components/ShopModal';
 import OnboardingModal from './components/OnboardingModal';
+import GameOverModal from './components/GameOverModal';
 import { Settings, Profile, GameMode, HighScore } from './types';
 import { TRANSLATIONS, PROFILE_STORAGE_KEY, SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS, ABILITIES } from './constants';
 import * as Icons from 'lucide-react';
@@ -55,13 +56,16 @@ const App: React.FC = () => {
               if (parsed.hasSeenOnboarding === undefined) {
                   parsed.hasSeenOnboarding = false;
               }
+              if (parsed.hasSeenAbilitiesOnboarding === undefined) {
+                  parsed.hasSeenAbilitiesOnboarding = false;
+              }
               if (parsed.gamesPlayed === undefined) {
                   parsed.gamesPlayed = 0;
               }
               setProfile(parsed);
           } else {
               localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
-                  coins: 0, level: 1, xp: 0, unlockedAbilities: ['wipe'], hasSeenOnboarding: false, gamesPlayed: 0
+                  coins: 0, level: 1, xp: 0, unlockedAbilities: ['wipe'], hasSeenOnboarding: false, hasSeenAbilitiesOnboarding: false, gamesPlayed: 0
               }));
           }
       } catch (e) {
@@ -108,7 +112,15 @@ const App: React.FC = () => {
     holdPieceType,
     playTime,
     hardDropTrails
-  } = useTetris(settings.soundVolume, handleCoinsEarned, settings);
+  } = useTetris(
+    settings.soundVolume, 
+    handleCoinsEarned, 
+    settings,
+    {
+      scoreBoost: profile.unlockedAbilities.includes('score_boost'),
+      slowStart: profile.unlockedAbilities.includes('slow_start')
+    }
+  );
 
   const formatTime = (seconds: number) => {
       const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -124,14 +136,14 @@ const App: React.FC = () => {
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
 
   useEffect(() => {
-      if (!showGame) {
+      if (!showGame || gameOver) {
           setBgState('menu');
       } else if (isPaused) {
           setBgState('pause');
       } else {
           setBgState('game');
       }
-  }, [showGame, isPaused]);
+  }, [showGame, isPaused, gameOver]);
 
   useEffect(() => {
       if (!showGame || isPaused || gameOver) return;
@@ -192,7 +204,9 @@ const App: React.FC = () => {
   // Highest score from storage
   const bestScore = highScores.length > 0 ? highScores[0].score : 0;
 
-  const handleStart = useCallback((mode: GameMode = 'classic') => {
+  const [showGamePending, setShowGamePending] = useState<GameMode | null>(null);
+
+  const executeStart = useCallback((mode: GameMode = 'classic') => {
       setGameMode(mode);
       setCooldowns({});
       setIsMenuExiting(true); 
@@ -210,6 +224,14 @@ const App: React.FC = () => {
           }, 450); 
       }, 300); 
   }, [startGame, settings.soundVolume]);
+
+  const handleStart = useCallback((mode: GameMode = 'classic') => {
+      if (mode === 'abilities' && profile.hasSeenAbilitiesOnboarding === false && profile.hasSeenOnboarding === true) {
+          setShowGamePending(mode);
+          return;
+      }
+      executeStart(mode);
+  }, [executeStart, profile.hasSeenAbilitiesOnboarding, profile.hasSeenOnboarding]);
 
   const handleQuit = useCallback(() => {
       playSound('slash', settings.soundVolume);
@@ -274,12 +296,33 @@ const App: React.FC = () => {
           <OnboardingModal 
               isOpen={true} 
               language={settings.language}
+              type="basic"
               onClose={() => {
                   setProfile(p => {
                       const np = { ...p, hasSeenOnboarding: true };
                       localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(np));
                       return np;
                   });
+              }} 
+          />
+      )}
+
+      {introComplete && !showGame && profile.hasSeenOnboarding === true && profile.hasSeenAbilitiesOnboarding === false && showGamePending === 'abilities' && (
+          <OnboardingModal 
+              isOpen={true} 
+              language={settings.language}
+              type="abilities"
+              onClose={() => {
+                  setProfile(p => {
+                      const np = { ...p, hasSeenAbilitiesOnboarding: true };
+                      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(np));
+                      return np;
+                  });
+                  // After closing, resume the pending start
+                  if (showGamePending === 'abilities') {
+                      executeStart('abilities');
+                      setShowGamePending(null);
+                  }
               }} 
           />
       )}
@@ -443,27 +486,16 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <Modal title={t.gameOver} isOpen={gameOver}>
-          <div className="flex flex-col gap-8 items-center">
-              <div className="text-4xl font-black bg-white text-black px-6 py-2 transform -skew-x-12 inline-block border-2 border-p5-dark shadow-hard-black">
-                {t.score}: {score.toLocaleString()}
-              </div>
-              <div className="w-full h-px bg-white/30" />
-              <div className="flex flex-col w-full gap-4">
-                  <MenuButton label={t.retry} onClick={() => handleStart(gameMode)} primary />
-                  <button 
-                      onClick={() => {
-                          playSound('click', settings.soundVolume);
-                          handleQuit();
-                      }}
-                      onMouseEnter={() => playSound('hover', settings.soundVolume)}
-                      className="text-white/70 hover:text-white underline underline-offset-4 decoration-p5-red decoration-2 uppercase tracking-widest font-bold"
-                  >
-                      {t.back}
-                  </button>
-              </div>
-          </div>
-      </Modal>
+      <GameOverModal
+          isOpen={gameOver}
+          score={score}
+          language={settings.language}
+          soundVolume={settings.soundVolume}
+          onRetry={() => handleStart(gameMode)}
+          onQuit={() => {
+              handleQuit();
+          }}
+      />
 
       <SettingsModal 
           isOpen={showSettings} 

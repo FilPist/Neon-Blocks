@@ -114,6 +114,8 @@ export const ABILITIES = [
   { id: 'swap', name: 'PIECE SWAP', type: 'active', cost: 150, desc: 'Swaps the current piece with the next one.', icon: 'RefreshCcw', cooldown: 20 },
   { id: 'collapse', name: 'GRAVITY WELL', type: 'active', cost: 400, desc: 'Forces all blocks to fall down, filling gaps.', icon: 'ArrowDownToLine', cooldown: 75 },
   { id: 'magnet', name: 'COIN MAGNET', type: 'passive', cost: 1000, desc: 'Doubles all coins earned from playing.', icon: 'Magnet' },
+  { id: 'score_boost', name: 'SCORE BOOSTER', type: 'passive', cost: 750, desc: 'Increases all points gained by 25%.', icon: 'TrendingUp' },
+  { id: 'slow_start', name: 'CALM START', type: 'passive', cost: 500, desc: 'Initial drop speed is 20% slower.', icon: 'Turtle' }
 ];
 
 export const TRANSLATIONS = {
@@ -128,7 +130,7 @@ export const TRANSLATIONS = {
     sound: "MASTER VOLUME",
     language: "INTERFACE LANG",
     back: "RETURN",
-    ticker: "ATTENTION: SYSTEM OPTIMIZATION IN PROGRESS // ACCESSING NEON CORE // RUNNING PROTOCOL 1.0.8 // DATA FLOW STABILIZED //",
+    ticker: "ATTENTION: SYSTEM OPTIMIZATION IN PROGRESS // ACCESSING NEON CORE // RUNNING PROTOCOL 1.0.9 // DATA FLOW STABILIZED //",
     system: "CORE NAVIGATOR",
     ready: "READY TO RUN",
     paused: "SIGNAL PAUSED",
@@ -161,7 +163,12 @@ export const TRANSLATIONS = {
     onboardingHowToTitle: "HOW TO USE",
     onboardingHowToDesc: "Press the number key (1, 2, 3...) matching the ability slot on the right, or click its icon during gameplay.",
     onboardingStart: "START SYSTEM",
-    patchNotes: "PATCH NOTES"
+    patchNotes: "PATCH NOTES",
+    resetData: "FACTORY RESET",
+    resetConfirmTitle: "DANGER: COMPLETE ERASURE",
+    resetConfirmDesc: "This will permanently delete all high scores, coins, unlocked abilities, and settings. Are you absolutely sure?",
+    resetYes: "CONFIRM ERASURE",
+    resetNo: "ABORT"
   },
   it: {
     start: "INIZIA SEQUENZA",
@@ -174,7 +181,7 @@ export const TRANSLATIONS = {
     sound: "VOLUME MASTER",
     language: "LINGUA INTERFACCIA",
     back: "INDIETRO",
-    ticker: "ATTENZIONE: OTTIMIZZAZIONE SISTEMA IN CORSO // ACCESSO AL CORE NEON // PROTOCOLLO 1.0.8 ATTIVO // FLUSSO DATI STABILIZZATO //",
+    ticker: "ATTENZIONE: OTTIMIZZAZIONE SISTEMA IN CORSO // ACCESSO AL CORE NEON // PROTOCOLLO 1.0.9 ATTIVO // FLUSSO DATI STABILIZZATO //",
     system: "NAVIGATORE CORE",
     ready: "PRONTO AL LANCIO",
     paused: "SEGNALE IN PAUSA",
@@ -207,6 +214,11 @@ export const TRANSLATIONS = {
     onboardingHowToTitle: "COME USARLE",
     onboardingHowToDesc: "Premi il tasto (1, 2, 3...) dello slot dell'abilità a destra, oppure clicca l'icona durante la partita.",
     onboardingStart: "AVVIA SISTEMA",
-    patchNotes: "NOTE SULLA PATCH"
+    patchNotes: "NOTE SULLA PATCH",
+    resetData: "RIPRISTINO DI FABBRICA",
+    resetConfirmTitle: "PERICOLO: RIMOZIONE TOTALE",
+    resetConfirmDesc: "Questo eliminerà permanentemente tutti i punteggi record, monete, abilità sbloccate e impostazioni. Sei assolutamente sicuro?",
+    resetYes: "CONFERMA CANCELLAZIONE",
+    resetNo: "ANNULLA"
   }
 };

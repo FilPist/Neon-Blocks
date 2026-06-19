@@ -16,13 +16,15 @@ const getRandomTetromino = () => {
   return TETROMINOES[type];
 };
 
-export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) => void, settings?: Settings) => {
+export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) => void, settings?: Settings, passives?: { scoreBoost?: boolean, slowStart?: boolean }) => {
   const volumeRef = useRef(volume);
   const onCoinsEarnedRef = useRef(onCoinsEarned);
+  const passivesRef = useRef(passives);
   useEffect(() => {
     volumeRef.current = volume;
     onCoinsEarnedRef.current = onCoinsEarned;
-  }, [volume, onCoinsEarned]);
+    passivesRef.current = passives;
+  }, [volume, onCoinsEarned, passives]);
 
   const [grid, setGrid] = useState<BoardGrid>(createEmptyGrid());
   const [score, setScore] = useState(0);
@@ -208,7 +210,11 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     
     // Popup and Combo Logic
     if (linesCleared > 0) {
-        s.score += linesCleared * 100 * s.level * (comboRef.current + 1);
+        let basePoints = linesCleared * 100 * s.level * (comboRef.current + 1);
+        if (passivesRef.current?.scoreBoost) {
+            basePoints = Math.floor(basePoints * 1.25);
+        }
+        s.score += basePoints;
         s.lines += linesCleared;
         
         comboRef.current += 1; // Increment combo
@@ -435,7 +441,11 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
         s.playTime += deltaTime;
         
         // Calculate speed
-        let currentSpeed = Math.max(MIN_SPEED, INITIAL_SPEED - (s.level - 1) * SPEED_DECREMENT);
+        let baseSpeed = INITIAL_SPEED;
+        if (passivesRef.current?.slowStart) {
+            baseSpeed *= 1.2; // 20% slower
+        }
+        let currentSpeed = Math.max(MIN_SPEED, baseSpeed - (s.level - 1) * SPEED_DECREMENT);
         if (isSoftDroppingRef.current) {
             const factor = settings?.sdf || 5;
             currentSpeed = currentSpeed / factor;
