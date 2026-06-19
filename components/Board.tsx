@@ -150,7 +150,7 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
                 )}
             </div>
 
-            <div className="absolute inset-0 pointer-events-none overflow-hidden z-10 p-[1px]">
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-[15] p-[1px]">
                 {hardDropTrails.map((trail) => (
                     <div 
                         key={trail.id}
@@ -158,7 +158,8 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
                         style={{
                             left: `${trail.col * 10}%`,
                             width: '10%',
-                            background: `linear-gradient(to top, ${trail.color}88 0%, transparent 100%)`
+                            background: `linear-gradient(to top, ${trail.color} 0%, transparent 100%)`,
+                            opacity: 0.6
                         }}
                     />
                 ))}
