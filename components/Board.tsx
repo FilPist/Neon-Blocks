@@ -120,11 +120,11 @@ const Board: React.FC<BoardProps> = ({ grid, piece, isShaking, popups, hardDropT
                         {row.map((cell, x) => (
                             <div 
                                 key={`${x}-${y}`} 
-                                className={`relative w-full h-full transition-all duration-75 overflow-hidden`}
+                                className="relative w-full h-full overflow-hidden"
                             >
                                 {cell.value && !cell.isGhost && (
                                     <div 
-                                        className={`w-full h-full animate-zoom-in duration-100 relative ${isShaking ? 'animate-flash-row' : ''}`}
+                                        className={`w-full h-full relative ${isShaking ? 'animate-flash-row' : ''}`}
                                         style={{ 
                                             backgroundColor: cell.color,
                                             border: '2px solid rgba(255,255,255,0.8)',

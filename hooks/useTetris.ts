@@ -526,6 +526,9 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
   }, [saveHighScore]);
 
   const isSoftDroppingRef = useRef(false);
+  const activeMoveKeysRef = useRef<{ [key: string]: boolean }>({});
+  const moveTimerRef = useRef<{ [key: string]: any }>({});
+  const moveIntervalRef = useRef<{ [key: string]: any }>({});
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -550,12 +553,45 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
           return;
       }
 
+      const isLeftKey = isCustom && bindings ? lowerKey === bindings.moveLeft.toLowerCase() : ['arrowleft', 'a'].includes(lowerKey);
+      const isRightKey = isCustom && bindings ? lowerKey === bindings.moveRight.toLowerCase() : ['arrowright', 'd'].includes(lowerKey);
+
+      if (isLeftKey) {
+          if (!activeMoveKeysRef.current['left']) {
+              activeMoveKeysRef.current['left'] = true;
+              move(-1, 0);
+              if (moveTimerRef.current['left']) clearTimeout(moveTimerRef.current['left']);
+              if (moveIntervalRef.current['left']) clearInterval(moveIntervalRef.current['left']);
+              
+              moveTimerRef.current['left'] = setTimeout(() => {
+                  moveIntervalRef.current['left'] = setInterval(() => {
+                      move(-1, 0);
+                  }, 30);
+              }, 140);
+          }
+          return;
+      }
+
+      if (isRightKey) {
+          if (!activeMoveKeysRef.current['right']) {
+              activeMoveKeysRef.current['right'] = true;
+              move(1, 0);
+              if (moveTimerRef.current['right']) clearTimeout(moveTimerRef.current['right']);
+              if (moveIntervalRef.current['right']) clearInterval(moveIntervalRef.current['right']);
+              
+              moveTimerRef.current['right'] = setTimeout(() => {
+                  moveIntervalRef.current['right'] = setInterval(() => {
+                      move(1, 0);
+                  }, 30);
+              }, 140);
+          }
+          return;
+      }
+
       if (e.repeat) return;
 
       if (isCustom && bindings) {
-          if (lowerKey === bindings.moveLeft.toLowerCase()) move(-1, 0);
-          else if (lowerKey === bindings.moveRight.toLowerCase()) move(1, 0);
-          else if (lowerKey === bindings.rotateCW.toLowerCase()) rotate(1);
+          if (lowerKey === bindings.rotateCW.toLowerCase()) rotate(1);
           else if (lowerKey === bindings.rotateCCW.toLowerCase()) rotate(-1);
           else if (lowerKey === bindings.rotate180.toLowerCase()) rotate(2);
           else if (key === bindings.hardDrop || lowerKey === bindings.hardDrop.toLowerCase()) hardDrop();
@@ -563,8 +599,6 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
           else if (key === bindings.pause || lowerKey === bindings.pause.toLowerCase()) togglePause();
       } else {
         switch (e.key) {
-          case 'ArrowLeft': case 'a': case 'A': move(-1, 0); break;
-          case 'ArrowRight': case 'd': case 'D': move(1, 0); break;
           case 'ArrowUp': case 'e': case 'E': rotate(1); break;
           case 'q': case 'Q': rotate(-1); break;
           case 'w': case 'W': rotate(2); break;
@@ -583,6 +617,33 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
        if (isSoftDropKey) {
            isSoftDroppingRef.current = false;
        }
+
+       const isLeftKey = isCustom && bindings ? lowerKey === bindings.moveLeft.toLowerCase() : ['arrowleft', 'a'].includes(lowerKey);
+       const isRightKey = isCustom && bindings ? lowerKey === bindings.moveRight.toLowerCase() : ['arrowright', 'd'].includes(lowerKey);
+
+       if (isLeftKey) {
+           activeMoveKeysRef.current['left'] = false;
+           if (moveTimerRef.current['left']) {
+               clearTimeout(moveTimerRef.current['left']);
+               moveTimerRef.current['left'] = null;
+           }
+           if (moveIntervalRef.current['left']) {
+               clearInterval(moveIntervalRef.current['left']);
+               moveIntervalRef.current['left'] = null;
+           }
+       }
+
+       if (isRightKey) {
+           activeMoveKeysRef.current['right'] = false;
+           if (moveTimerRef.current['right']) {
+               clearTimeout(moveTimerRef.current['right']);
+               moveTimerRef.current['right'] = null;
+           }
+           if (moveIntervalRef.current['right']) {
+               clearInterval(moveIntervalRef.current['right']);
+               moveIntervalRef.current['right'] = null;
+           }
+       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -590,6 +651,14 @@ export const useTetris = (volume: number = 50, onCoinsEarned?: (coins: number) =
     return () => {
         window.removeEventListener('keydown', handleKeyDown);
         window.removeEventListener('keyup', handleKeyUp);
+        
+        // Clean up timers
+        Object.keys(moveTimerRef.current).forEach(k => {
+            if (moveTimerRef.current[k]) clearTimeout(moveTimerRef.current[k]);
+        });
+        Object.keys(moveIntervalRef.current).forEach(k => {
+            if (moveIntervalRef.current[k]) clearInterval(moveIntervalRef.current[k]);
+        });
     }
   }, [move, rotate, hardDrop, togglePause, holdPiece, settings]);
 
